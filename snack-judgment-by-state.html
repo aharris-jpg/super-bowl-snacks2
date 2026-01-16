@@ -352,10 +352,10 @@
     // CATEGORY STYLING (soft)
     // =========================
     const CATS = {
-      judged:  { label:"Hosts are judged", fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)", short:"Judged" },
-      some:    { label:"Some judgment",    fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some" },
-      neutral: { label:"Notice, don’t judge", fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not" },
-      doesnt:  { label:"Doesn’t matter",   fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",  short:"No" }
+      judged:  { label:"Hosts are judged",      fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)",  short:"Judged" },
+      some:    { label:"Some judgment",         fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some"   },
+      neutral: { label:"Notice, don’t judge",   fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not"    },
+      doesnt:  { label:"Doesn’t matter",        fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",   short:"No"     }
     };
 
     // Legend
@@ -368,68 +368,61 @@
     `).join("");
 
     // =========================
-    // Q5 DATA (FROM YOUR TABLE)
-    // Winner = max of [strongly, somewhat, notice, doesnt], excluding "do not attend"
+    // Q5 DATA (MATCHED TO YOUR TABLE EXACTLY)
+    // Winner = max of [strong, some, notice, doesnt], excluding "noParty"
     // =========================
     const Q5 = {
-      "Alabama":      {strong:15, some:18, notice:35, doesnt:23, noParty:8},
-      "Alaska":       {strong:8,  some:19, notice:48, doesnt:19, noParty:6},
-      "Arizona":      {strong:21, some:27, notice:31, doesnt:13, noParty:8},
-      "Arkansas":     {strong:15, some:20, notice:30, doesnt:28, noParty:8},
-      "California":   {strong:24, some:32, notice:27, doesnt:11, noParty:6},
-      "Colorado":     {strong:18, some:16, notice:40, doesnt:16, noParty:10},
-      "Connecticut":  {strong:14, some:22, notice:43, doesnt:17, noParty:3},
-      "Delaware":     {strong:18, some:13, notice:33, doesnt:25, noParty:10},
-      "Florida":      {strong:24, some:17, notice:38, doesnt:17, noParty:3},
-      "Georgia":      {strong:20, some:20, notice:40, doesnt:15, noParty:5},
-      "Hawaii":       {strong:19, some:21, notice:21, doesnt:33, noParty:6},
-      "Idaho":        {strong:2,  some:35, notice:18, doesnt:33, noParty:12},
-      "Illinois":     {strong:11, some:18, notice:32, doesnt:23, noParty:15},
-      "Indiana":      {strong:15, some:25, notice:27, doesnt:23, noParty:10},
-      "Iowa":         {strong:14, some:20, notice:34, doesnt:17, noParty:15},
-      "Kansas":       {strong:8,  some:20, notice:32, doesnt:30, noParty:10},
-      "Kentucky":     {strong:20, some:20, notice:34, doesnt:20, noParty:7},
-      "Louisiana":    {strong:29, some:25, notice:26, doesnt:15, noParty:5},
-      "Maine":        {strong:15, some:25, notice:32, doesnt:22, noParty:7},
-      "Maryland":     {strong:12, some:28, notice:25, doesnt:25, noParty:11},
-      "Massachusetts":{strong:23, some:13, notice:31, doesnt:20, noParty:13},
-      "Michigan":     {strong:23, some:24, notice:27, doesnt:15, noParty:11},
-      "Minnesota":    {strong:5,  some:15, notice:48, doesnt:18, noParty:13},
-      "Mississippi":  {strong:32, some:20, notice:23, doesnt:18, noParty:7},
-      "Missouri":     {strong:20, some:15, notice:39, doesnt:19, noParty:7},
-      "Montana":      {strong:9,  some:15, notice:40, doesnt:20, noParty:16},
-      "Nebraska":     {strong:12, some:8,  notice:48, doesnt:18, noParty:13},
-      "Nevada":       {strong:17, some:15, notice:31, doesnt:25, noParty:12},
-      "New Hampshire":{strong:15, some:20, notice:42, doesnt:18, noParty:5},
-      "New Jersey":   {strong:21, some:19, notice:29, doesnt:23, noParty:8},
-      "New Mexico":   {strong:13, some:18, notice:33, doesnt:26, noParty:10},
-      "New York":     {strong:22, some:36, notice:30, doesnt:6,  noParty:6},
+      "Alabama":       {strong:15, some:18, notice:35, doesnt:23, noParty:8},
+      "Alaska":        {strong:8,  some:19, notice:48, doesnt:19, noParty:6},
+      "Arizona":       {strong:21, some:27, notice:31, doesnt:13, noParty:8},
+      "Arkansas":      {strong:15, some:20, notice:30, doesnt:28, noParty:8},
+      "California":    {strong:24, some:32, notice:27, doesnt:11, noParty:6},
+      "Colorado":      {strong:18, some:16, notice:40, doesnt:16, noParty:10},
+      "Connecticut":   {strong:14, some:22, notice:43, doesnt:17, noParty:3},
+      "Delaware":      {strong:18, some:13, notice:33, doesnt:25, noParty:10},
+      "Florida":       {strong:24, some:17, notice:38, doesnt:17, noParty:3},
+      "Georgia":       {strong:20, some:20, notice:40, doesnt:15, noParty:5},
+      "Hawaii":        {strong:19, some:21, notice:21, doesnt:33, noParty:6},
+      "Idaho":         {strong:2,  some:35, notice:18, doesnt:33, noParty:12},
+      "Illinois":      {strong:11, some:18, notice:32, doesnt:23, noParty:15},
+      "Indiana":       {strong:15, some:25, notice:27, doesnt:23, noParty:10},
+      "Iowa":          {strong:14, some:20, notice:34, doesnt:17, noParty:15},
+      "Kansas":        {strong:8,  some:20, notice:32, doesnt:30, noParty:10},
+      "Kentucky":      {strong:20, some:20, notice:34, doesnt:20, noParty:7},
+      "Louisiana":     {strong:29, some:25, notice:26, doesnt:15, noParty:5},
+      "Maine":         {strong:15, some:25, notice:32, doesnt:22, noParty:7},
+      "Maryland":      {strong:12, some:28, notice:25, doesnt:25, noParty:11},
+      "Massachusetts": {strong:23, some:13, notice:31, doesnt:20, noParty:13},
+      "Michigan":      {strong:23, some:24, notice:27, doesnt:15, noParty:11},
+      "Minnesota":     {strong:5,  some:15, notice:48, doesnt:18, noParty:13},
+      "Mississippi":   {strong:32, some:20, notice:23, doesnt:18, noParty:7},
+      "Missouri":      {strong:20, some:15, notice:39, doesnt:19, noParty:7},
+      "Montana":       {strong:9,  some:15, notice:40, doesnt:20, noParty:16},
+      "Nebraska":      {strong:12, some:8,  notice:48, doesnt:18, noParty:13},
+      "Nevada":        {strong:17, some:15, notice:31, doesnt:25, noParty:12},
+      "New Hampshire": {strong:15, some:20, notice:42, doesnt:18, noParty:5},
+      "New Jersey":    {strong:21, some:19, notice:29, doesnt:23, noParty:8},
+      "New Mexico":    {strong:13, some:18, notice:33, doesnt:26, noParty:10},
+      "New York":      {strong:22, some:36, notice:30, doesnt:6,  noParty:6},
       "North Carolina":{strong:17, some:38, notice:22, doesnt:14, noParty:8},
-      "North Dakota": {strong:17, some:26, notice:19, doesnt:28, noParty:10},
-      "Ohio":         {strong:17, some:25, notice:38, doesnt:16, noParty:3},
-      "Oklahoma":     {strong:13, some:23, notice:31, doesnt:20, noParty:13},
-      "Oregon":       {strong:10, some:30, notice:28, doesnt:25, noParty:8},
-      "Pennsylvania": {strong:17, some:26, notice:29, doesnt:20, noParty:8},
-      "Rhode Island": {strong:15, some:22, notice:45, doesnt:13, noParty:5},
+      "North Dakota":  {strong:17, some:26, notice:19, doesnt:28, noParty:10},
+      "Ohio":          {strong:17, some:25, notice:38, doesnt:16, noParty:3},
+      "Oklahoma":      {strong:13, some:23, notice:31, doesnt:20, noParty:13},
+      "Oregon":        {strong:10, some:30, notice:28, doesnt:25, noParty:8},
+      "Pennsylvania":  {strong:17, some:26, notice:29, doesnt:20, noParty:8},
+      "Rhode Island":  {strong:15, some:22, notice:45, doesnt:13, noParty:5},
       "South Carolina":{strong:5,  some:15, notice:44, doesnt:22, noParty:14},
-      "South Dakota": {strong:16, some:23, notice:30, doesnt:25, noParty:7},
-      "Tennessee":    {strong:22, some:23, notice:28, doesnt:18, noParty:8},
-      "Texas":        {strong:19, some:36, notice:23, doesnt:9,  noParty:13},
-      "Utah":         {strong:13, some:28, notice:30, doesnt:18, noParty:11},
-      "Vermont":      {strong:11, some:24, notice:37, doesnt:16, noParty:13},
-      "Virginia":     {strong:13, some:28, notice:36, doesnt:16, noParty:7},
-      "Washington":   {strong:19, some:27, notice:33, doesnt:16, noParty:6},
-      "West Virginia":{strong:15, some:20, notice:31, doesnt:29, noParty:5},
-      "Wisconsin":    {strong:13, some:14, notice:44, doesnt:24, noParty:5},
-      "Wyoming":      {strong:22, some:27, notice:27, doesnt:18, noParty:5}
+      "South Dakota":  {strong:16, some:23, notice:30, doesnt:25, noParty:7},
+      "Tennessee":     {strong:22, some:23, notice:28, doesnt:18, noParty:8},
+      "Texas":         {strong:19, some:36, notice:23, doesnt:9,  noParty:13},
+      "Utah":          {strong:13, some:28, notice:30, doesnt:18, noParty:11},
+      "Vermont":       {strong:11, some:24, notice:37, doesnt:16, noParty:13},
+      "Virginia":      {strong:13, some:28, notice:36, doesnt:16, noParty:7},
+      "Washington":    {strong:19, some:27, notice:33, doesnt:16, noParty:6},
+      "West Virginia": {strong:15, some:20, notice:31, doesnt:29, noParty:5},
+      "Wisconsin":     {strong:13, some:14, notice:44, doesnt:24, noParty:5},
+      "Wyoming":       {strong:22, some:27, notice:27, doesnt:18, noParty:5}
     };
-
-    // IMPORTANT CORRECTIONS from your earlier map:
-    // - Mississippi should be "Not Judged" in your earlier labeling, but based on the table you pasted,
-    //   Mississippi actually has Strongly=32 (highest) => "Hosts are judged".
-    // - Minnesota based on the table is "Not Judged" (48 highest).
-    //
-    // The Q5 object above reflects the exact figures per your pasted row order for each state.
 
     // =========================
     // Build winner category per state
@@ -639,4 +632,3 @@
   </script>
 </body>
 </html>
-
