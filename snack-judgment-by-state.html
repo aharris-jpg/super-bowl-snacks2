@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Where Super Bowl Hosts Get Judged on Snacks — by State</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- D3 + TopoJSON -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+  <style>
+    :root{
+      --bgTop:#e9fbf6;
+      --bgBottom:#fff6f2;
+
+      --ink:#1a2730;
+      --muted:rgba(26,39,48,0.70);
+
+      --accent:#5677ff;
+      --accentDeep:#3f5fe6;
+
+      --card:rgba(255,255,255,0.70);
+      --border:rgba(26,39,48,0.10);
+      --shadow:0 18px 46px rgba(0,0,0,0.12);
+
+      --radius:18px;
+
+      --mapStroke:#ffffff;
+      --mapStrokeW:6.2;
+
+      --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      min-height:100vh;
+      padding:22px 14px 26px;
+      background:
+        radial-gradient(1000px 620px at 75% 18%, rgba(255,179,199,0.28), transparent 55%),
+        radial-gradient(900px 640px at 20% 18%, rgba(168,230,222,0.26), transparent 56%),
+        radial-gradient(900px 650px at 55% 88%, rgba(255,198,168,0.26), transparent 58%),
+        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
+      overflow-x:hidden;
+    }
+
+    .wrap{ max-width:1040px; margin:0 auto; }
+
+    /* ===== Header ===== */
+    .hero{
+      position:relative;
+      padding:10px 0 10px;
+      margin-bottom:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .flag{
+      flex:0 0 auto;
+      background:linear-gradient(180deg, var(--accent), var(--accentDeep));
+      color:#fff;
+      padding:12px 14px 12px 16px;
+      border-radius:12px;
+      box-shadow:0 14px 34px rgba(86,119,255,0.22);
+      font-weight:950;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      line-height:1.05;
+      min-width:128px;
+    }
+    .flag .star{ margin-left:6px; }
+    .flag small{ display:block; font-size:12px; opacity:0.95; }
+    .flag b{ display:block; font-size:14px; }
+
+    .headcopy{ flex:1; min-width:0; }
+    .title{
+      margin:0;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:0.02em;
+      line-height:0.95;
+      font-size:clamp(28px, 4.6vw, 52px);
+      color:var(--accent);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    }
+    .subtitle{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-weight:800;
+      font-size:clamp(13px, 1.8vw, 16px);
+    }
+
+    @media (max-width:720px){
+      .hero{ flex-direction:column; align-items:flex-start; }
+      .flag{ min-width:auto; }
+    }
+
+    /* ===== Card ===== */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .map-area{ padding:16px 16px 12px; }
+
+    .map-frame{
+      position:relative;
+      border-radius:16px;
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.55);
+      overflow:hidden;
+    }
+
+    /* subtle diagonal highlight band */
+    .map-frame:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(165deg,
+          rgba(255,255,255,0.0) 0%,
+          rgba(255,255,255,0.0) 35%,
+          rgba(255,255,255,0.26) 36%,
+          rgba(255,255,255,0.26) 58%,
+          rgba(255,255,255,0.0) 59%,
+          rgba(255,255,255,0.0) 100%);
+      pointer-events:none;
+      opacity:0.55;
+    }
+
+    svg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
+
+    .state{
+      stroke:var(--mapStroke);
+      stroke-width:var(--mapStrokeW);
+      stroke-linejoin:round;
+      stroke-linecap:round;
+    }
+    .state:hover{
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
+    }
+
+    .state-outline{
+      fill:none;
+      stroke:rgba(26,39,48,0.08);
+      stroke-width:1;
+      pointer-events:none;
+    }
+
+    /* ===== Labels on the map ===== */
+    .labels text{
+      font-weight:1000;
+      letter-spacing:0.01em;
+      fill:rgba(26,39,48,0.86);
+      paint-order: stroke;
+      stroke:rgba(255,255,255,0.92);
+      stroke-width:4px;
+      stroke-linejoin:round;
+      pointer-events:none;
+      text-anchor:middle;
+      dominant-baseline:middle;
+    }
+
+    /* Tooltip */
+    .tooltip{
+      position:absolute;
+      pointer-events:none;
+      display:none;
+      z-index:100;
+      background:rgba(255,255,255,0.96);
+      border:1px solid rgba(26,39,48,0.14);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.16);
+      max-width:260px;
+      backdrop-filter: blur(10px);
+    }
+    .tooltip strong{
+      display:block;
+      font-weight:950;
+      margin-bottom:4px;
+      color:rgba(26,39,48,0.92);
+    }
+    .tooltip .pill{
+      display:inline-block;
+      margin-top:6px;
+      font-size:11px;
+      font-weight:950;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      letter-spacing:0.02em;
+      white-space:nowrap;
+    }
+
+    /* ===== Legend (small + clean) ===== */
+    .legend{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:10px;
+      margin:12px 0 6px;
+    }
+    @media (max-width:820px){
+      .legend{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    }
+    .leg-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.62);
+      border:1px solid rgba(26,39,48,0.08);
+      min-width:0;
+    }
+    .swatch{
+      width:14px;
+      height:14px;
+      border-radius:5px;
+      border:1px solid rgba(26,39,48,0.10);
+      flex:0 0 auto;
+    }
+    .leg-label{
+      font-weight:1000;
+      font-size:12px;
+      color:rgba(26,39,48,0.90);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* ===== Footer / Methodology / Embed ===== */
+    .method{
+      padding:10px 16px 12px;
+      font-size:11px;
+      line-height:1.35;
+      color:rgba(26,39,48,0.66);
+      border-top:1px solid rgba(26,39,48,0.08);
+      background:rgba(255,255,255,0.55);
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .method strong{ color:rgba(26,39,48,0.82); }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-left:auto;
+    }
+    .logo{
+      height:36px;
+      width:auto;
+      display:block;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,0.12));
+    }
+
+    .embed{
+      padding:12px 16px 16px;
+      background:rgba(255,255,255,0.55);
+      border-top:1px solid rgba(26,39,48,0.08);
+    }
+    .embed-btn{
+      appearance:none;
+      border:1px solid rgba(26,39,48,0.14);
+      background:linear-gradient(90deg, rgba(86,119,255,0.95), rgba(122,164,255,0.95));
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:0.02em;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(86,119,255,0.16);
+    }
+    .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
+    .embed-panel[hidden]{ display:none; }
+    .embed-panel{
+      margin-top:10px;
+      border:1px solid rgba(26,39,48,0.12);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(255,255,255,0.62);
+    }
+    .embed-panel .ehint{
+      padding:10px 12px;
+      font-size:11px;
+      color:rgba(26,39,48,0.70);
+      border-bottom:1px solid rgba(26,39,48,0.10);
+      font-weight:850;
+    }
+    .embed-panel textarea{
+      width:100%;
+      height:120px;
+      padding:10px 12px;
+      border:0;
+      outline:none;
+      resize:none;
+      background:transparent;
+      color:rgba(26,39,48,0.88);
+      font:12px/1.4 var(--mono);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="flag"><small>HOSTS GET</small><b>JUDGED <span class="star">★</span></b></div>
+      <div class="headcopy">
+        <h1 class="title">Snack Hospitality<br/>Pressure — by State</h1>
+        <div class="subtitle">How much Super Bowl snacks influence opinions of the host</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="map-area">
+        <div class="map-frame">
+          <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Super Bowl host judgment by snacks map"></svg>
+        </div>
+
+        <!-- Legend under the map (no bottom state list) -->
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="method">
+        <div>
+          <strong>Methodology:</strong> Based on a RotoGrinders.com survey (Q5). For each state, we selected the most common answer among:
+          <strong>Hosts Are Judged</strong>, <strong>Some Judgment</strong>, <strong>Not Judged</strong>, and <strong>Doesn’t Matter</strong>.
+          “I do not attend Super Bowl parties” was excluded from the winner selection.
+        </div>
+        <div class="brand" aria-label="Brand">
+          <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
+        </div>
+      </div>
+
+      <div class="embed">
+        <button class="embed-btn" id="embedToggle" type="button" aria-controls="embedPanel" aria-expanded="false">
+          Get embed code
+        </button>
+
+        <div class="embed-panel" id="embedPanel" hidden>
+          <div class="ehint">Copy/paste this iframe. Replace the <strong>src</strong> with your hosted URL.</div>
+          <textarea id="embedCode" readonly onclick="this.select()"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tt"></div>
+
+  <script>
+    // =========================
+    // CATEGORY STYLING (soft)
+    // =========================
+    const CATS = {
+      judged:  { label:"Hosts Are Judged", fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)", short:"Judged" },
+      some:    { label:"Some Judgment",    fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some" },
+      neutral: { label:"Not Judged",       fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not" },
+      doesnt:  { label:"Doesn’t Matter",   fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",  short:"No" }
+    };
+
+    // Legend
+    const legend = document.getElementById("legend");
+    legend.innerHTML = Object.keys(CATS).map(k => `
+      <div class="leg-item">
+        <span class="swatch" style="background:${CATS[k].fill}"></span>
+        <span class="leg-label">${CATS[k].label}</span>
+      </div>
+    `).join("");
+
+    // =========================
+    // Q5 WINNER CATEGORY PER STATE
+    // =========================
+    const stateCategory = {
+      "Alabama":"neutral",
+      "Alaska":"neutral",
+      "Arizona":"neutral",
+      "Arkansas":"some",
+      "California":"neutral",
+      "Colorado":"some",
+      "Connecticut":"neutral",
+      "Delaware":"neutral",
+      "Florida":"neutral",
+      "Georgia":"neutral",
+      "Hawaii":"neutral",
+      "Idaho":"doesnt",
+      "Illinois":"some",
+      "Indiana":"neutral",
+      "Iowa":"some",
+      "Kansas":"neutral",
+      "Kentucky":"neutral",
+      "Louisiana":"neutral",
+      "Maine":"judged",
+      "Maryland":"some",
+      "Massachusetts":"some",
+      "Michigan":"neutral",
+      "Minnesota":"some",
+      "Mississippi":"neutral",
+      "Missouri":"judged",
+      "Montana":"neutral",
+      "Nebraska":"neutral",
+      "Nevada":"neutral",
+      "New Hampshire":"neutral",
+      "New Jersey":"neutral",
+      "New Mexico":"neutral",
+      "New York":"neutral",
+      "North Carolina":"some",
+      "North Dakota":"some",
+      "Ohio":"neutral",
+      "Oklahoma":"neutral",
+      "Oregon":"neutral",
+      "Pennsylvania":"some",
+      "Rhode Island":"neutral",
+      "South Carolina":"neutral",
+      "South Dakota":"neutral",
+      "Tennessee":"neutral",
+      "Texas":"some",
+      "Utah":"some",
+      "Vermont":"some",
+      "Virginia":"some",
+      "Washington":"neutral",
+      "West Virginia":"neutral",
+      "Wisconsin":"neutral",
+      "Wyoming":"some"
+    };
+
+    // USPS abbreviations (for tiny states + optional fallback)
+    const USPS = {
+      "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT",
+      "Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA",
+      "Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI",
+      "Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH",
+      "New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK",
+      "Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX",
+      "Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
+    };
+
+    // States where we force abbreviations (tiny / crowded)
+    const forceAbbrev = new Set([
+      "Connecticut","Delaware","Maryland","Massachusetts","New Hampshire","New Jersey",
+      "Rhode Island","Vermont"
+    ]);
+
+    // Northeast nudges so text doesn’t collide
+    const labelOffsets = {
+      "Rhode Island":[10, 10],
+      "Connecticut":[-10, 8],
+      "Massachusetts":[14, -2],
+      "New Jersey":[12, 10],
+      "Delaware":[10, 10],
+      "Maryland":[-14, 10],
+      "New Hampshire":[12, -6],
+      "Vermont":[-12, -4],
+      "Hawaii":[10, 6]
+    };
+
+    // =========================
+    // Tooltip helpers
+    // =========================
+    const tooltip = d3.select("#tt");
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+    function placeTooltip(event){
+      const rect = tooltip.node().getBoundingClientRect();
+      const pad = 10;
+      let x = event.pageX + 12;
+      let y = event.pageY + 12;
+      if (x + rect.width > window.innerWidth - pad) x = window.innerWidth - rect.width - pad;
+      if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
+      tooltip.style("left", x+"px").style("top", y+"px");
+    }
+    function showTip(event, stateName){
+      const key = stateCategory[stateName];
+      if(!key) return;
+      tooltip
+        .style("display","block")
+        .html(
+          `<strong>${esc(stateName)}</strong>
+           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(CATS[key].label)}</div>
+           <div class="pill" style="background:${CATS[key].badge}">Snack hospitality signal</div>`
+        );
+      placeTooltip(event);
+    }
+    function hideTip(){ tooltip.style("display","none"); }
+
+    // =========================
+    // Draw map + labels
+    // =========================
+    const svg = d3.select("#map");
+    const W = 975, H = 610;
+    const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
+    const path = d3.geoPath(projection);
+
+    function getLabelFont(){
+      // small, but readable; scales down on mobile
+      return window.innerWidth < 520 ? 11 : 12.5;
+    }
+
+    let cachedUS = null;
+    let cachedFeatures = null;
+
+    function renderMap(){
+      if(!cachedUS || !cachedFeatures) return;
+
+      svg.selectAll("*").remove();
+      svg.attr("viewBox", `0 0 ${W} ${H}`);
+
+      // Fill states
+      svg.append("g")
+        .selectAll("path")
+        .data(cachedFeatures)
+        .join("path")
+        .attr("class","state")
+        .attr("d", path)
+        .attr("fill", d => {
+          const name = d.properties && d.properties.name;
+          const key = stateCategory[name];
+          return key ? CATS[key].fill : "rgba(26,39,48,0.08)";
+        })
+        .on("mousemove", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!stateCategory[name]) return hideTip();
+          showTip(event, name);
+        })
+        .on("mouseout", hideTip)
+        .on("click", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!stateCategory[name]) return hideTip();
+          showTip(event, name);
+          event.stopPropagation();
+        });
+
+      // Borders
+      svg.append("path")
+        .datum(topojson.mesh(cachedUS, cachedUS.objects.states, (a,b)=>a!==b))
+        .attr("class","state-outline")
+        .attr("d", path);
+
+      // Labels (category words on-state)
+      const fontSize = getLabelFont();
+      const gLabels = svg.append("g").attr("class","labels");
+
+      const labelPoints = cachedFeatures.map(f => {
+        const name = f.properties && f.properties.name;
+        const key = stateCategory[name];
+        if(!key) return null;
+
+        const c = path.centroid(f);
+        if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
+
+        const [dx,dy] = labelOffsets[name] || [0,0];
+
+        // Use abbrev for tiny states; otherwise show short category word
+        const txt = forceAbbrev.has(name) ? `${USPS[name]} · ${CATS[key].short}` : CATS[key].short;
+
+        return { name, x:c[0]+dx, y:c[1]+dy, text:txt, key };
+      }).filter(Boolean);
+
+      gLabels.selectAll("text")
+        .data(labelPoints)
+        .join("text")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y)
+        .style("font-size", fontSize + "px")
+        .text(d => d.text);
+
+      document.addEventListener("click", hideTip);
+      document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") hideTip(); });
+    }
+
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+      cachedUS = us;
+      cachedFeatures = topojson.feature(us, us.objects.states).features;
+      renderMap();
+    });
+
+    let t = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(t);
+      t = setTimeout(() => renderMap(), 120);
+    });
+
+    // =========================
+    // Embed logic
+    // =========================
+    const embedToggle = document.getElementById("embedToggle");
+    const embedPanel  = document.getElementById("embedPanel");
+    const embedCode   = document.getElementById("embedCode");
+
+    if (embedCode) {
+      embedCode.value =
+`<iframe
+  src="https://aharris-jpg.github.io/super-bowl-snacks2/host-judgment-by-state.html"
+  title="Snack Hospitality Pressure — by State"
+  width="100%" height="980"
+  style="border:0;overflow:hidden;display:block;width:100%;"
+  loading="lazy"></iframe>`;
+    }
+
+    if (embedToggle) {
+      embedToggle.addEventListener("click", () => {
+        const hidden = embedPanel.hasAttribute("hidden");
+        if (hidden) {
+          embedPanel.removeAttribute("hidden");
+          embedToggle.setAttribute("aria-expanded", "true");
+          embedToggle.textContent = "Hide embed code";
+        } else {
+          embedPanel.setAttribute("hidden", "");
+          embedToggle.setAttribute("aria-expanded", "false");
+          embedToggle.textContent = "Get embed code";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
