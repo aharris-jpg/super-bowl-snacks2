@@ -17,8 +17,8 @@
       --ink:#1a2730;
       --muted:rgba(26,39,48,0.70);
 
-      --accent:#5677ff;
-      --accentDeep:#3f5fe6;
+      /* neutral accent (no blue badge) */
+      --accent:#1a2730;
 
       --card:rgba(255,255,255,0.70);
       --border:rgba(26,39,48,0.10);
@@ -51,55 +51,45 @@
 
     .wrap{ max-width:1040px; margin:0 auto; }
 
-    /* ===== Header ===== */
+    /* ===== Header (no top-left badge) ===== */
     .hero{
-      position:relative;
-      padding:10px 0 10px;
+      padding:10px 0 12px;
       margin-bottom:12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
     }
 
-    .flag{
-      flex:0 0 auto;
-      background:linear-gradient(180deg, var(--accent), var(--accentDeep));
-      color:#fff;
-      padding:12px 14px 12px 16px;
-      border-radius:12px;
-      box-shadow:0 14px 34px rgba(86,119,255,0.22);
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(26,39,48,0.12);
+      background:rgba(255,255,255,0.55);
+      box-shadow:0 10px 24px rgba(0,0,0,0.06);
       font-weight:950;
-      letter-spacing:0.04em;
       text-transform:uppercase;
-      line-height:1.05;
-      min-width:128px;
+      letter-spacing:0.05em;
+      font-size:11px;
+      color:rgba(26,39,48,0.80);
+      margin-bottom:10px;
     }
-    .flag .star{ margin-left:6px; }
-    .flag small{ display:block; font-size:12px; opacity:0.95; }
-    .flag b{ display:block; font-size:14px; }
 
-    .headcopy{ flex:1; min-width:0; }
     .title{
       margin:0;
       font-weight:1000;
       text-transform:uppercase;
       letter-spacing:0.02em;
-      line-height:0.95;
-      font-size:clamp(28px, 4.6vw, 52px);
-      color:var(--accent);
+      line-height:0.96;
+      font-size:clamp(28px, 4.8vw, 52px);
+      color:rgba(26,39,48,0.92);
       text-shadow: 0 10px 30px rgba(0,0,0,0.10);
     }
     .subtitle{
       margin:10px 0 0;
       color:var(--muted);
-      font-weight:800;
+      font-weight:850;
       font-size:clamp(13px, 1.8vw, 16px);
-    }
-
-    @media (max-width:720px){
-      .hero{ flex-direction:column; align-items:flex-start; }
-      .flag{ min-width:auto; }
+      max-width:72ch;
     }
 
     /* ===== Card ===== */
@@ -122,7 +112,6 @@
       overflow:hidden;
     }
 
-    /* subtle diagonal highlight band */
     .map-frame:after{
       content:"";
       position:absolute;
@@ -147,9 +136,7 @@
       stroke-linejoin:round;
       stroke-linecap:round;
     }
-    .state:hover{
-      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
-    }
+    .state:hover{ filter: drop-shadow(0 0 10px rgba(0,0,0,0.10)); }
 
     .state-outline{
       fill:none;
@@ -158,7 +145,7 @@
       pointer-events:none;
     }
 
-    /* ===== Labels on the map ===== */
+    /* ===== Labels on map ===== */
     .labels text{
       font-weight:1000;
       letter-spacing:0.01em;
@@ -183,7 +170,7 @@
       border-radius:14px;
       padding:10px 12px;
       box-shadow:0 18px 44px rgba(0,0,0,0.16);
-      max-width:260px;
+      max-width:280px;
       backdrop-filter: blur(10px);
     }
     .tooltip strong{
@@ -204,7 +191,7 @@
       white-space:nowrap;
     }
 
-    /* ===== Legend (small + clean) ===== */
+    /* ===== Legend ===== */
     .legend{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
@@ -277,14 +264,14 @@
     .embed-btn{
       appearance:none;
       border:1px solid rgba(26,39,48,0.14);
-      background:linear-gradient(90deg, rgba(86,119,255,0.95), rgba(122,164,255,0.95));
+      background:linear-gradient(90deg, rgba(26,39,48,0.92), rgba(26,39,48,0.78));
       color:#fff;
       font-weight:1000;
       letter-spacing:0.02em;
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
-      box-shadow:0 14px 30px rgba(86,119,255,0.16);
+      box-shadow:0 14px 30px rgba(26,39,48,0.14);
     }
     .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
     .embed-panel[hidden]{ display:none; }
@@ -319,28 +306,26 @@
 <body>
   <div class="wrap">
     <div class="hero">
-      <div class="flag"><small>HOSTS GET</small><b>JUDGED <span class="star">★</span></b></div>
-      <div class="headcopy">
-        <h1 class="title">Snack Hospitality<br/>Pressure — by State</h1>
-        <div class="subtitle">How much Super Bowl snacks influence opinions of the host</div>
-      </div>
+      <div class="kicker">Super Bowl parties • Host impressions</div>
+      <h1 class="title">Where Super Bowl Hosts<br/>Get Judged on Snacks</h1>
+      <div class="subtitle">For each state, this shows the most common answer to: “How much do Super Bowl snacks influence your opinion of the host?”</div>
     </div>
 
     <div class="card">
       <div class="map-area">
         <div class="map-frame">
-          <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Super Bowl host judgment by snacks map"></svg>
+          <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Where Super Bowl hosts get judged on snacks — map"></svg>
         </div>
 
-        <!-- Legend under the map (no bottom state list) -->
         <div class="legend" id="legend"></div>
       </div>
 
       <div class="method">
         <div>
           <strong>Methodology:</strong> Based on a RotoGrinders.com survey (Q5). For each state, we selected the most common answer among:
-          <strong>Hosts Are Judged</strong>, <strong>Some Judgment</strong>, <strong>Not Judged</strong>, and <strong>Doesn’t Matter</strong>.
-          “I do not attend Super Bowl parties” was excluded from the winner selection.
+          <strong>Judged</strong> (strongly affects), <strong>Some</strong> (somewhat affects), <strong>Not</strong> (notice but don’t judge), and
+          <strong>Doesn’t</strong> (do not matter). “I do not attend Super Bowl parties” was excluded from the winner selection.
+          <br><strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n = 3,080 U.S. adults).
         </div>
         <div class="brand" aria-label="Brand">
           <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
@@ -367,10 +352,10 @@
     // CATEGORY STYLING (soft)
     // =========================
     const CATS = {
-      judged:  { label:"Hosts Are Judged", fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)", short:"Judged" },
-      some:    { label:"Some Judgment",    fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some" },
-      neutral: { label:"Not Judged",       fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not" },
-      doesnt:  { label:"Doesn’t Matter",   fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",  short:"No" }
+      judged:  { label:"Hosts are judged", fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)", short:"Judged" },
+      some:    { label:"Some judgment",    fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some" },
+      neutral: { label:"Notice, don’t judge", fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not" },
+      doesnt:  { label:"Doesn’t matter",   fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",  short:"No" }
     };
 
     // Legend
@@ -383,62 +368,92 @@
     `).join("");
 
     // =========================
-    // Q5 WINNER CATEGORY PER STATE
+    // Q5 DATA (FROM YOUR TABLE)
+    // Winner = max of [strongly, somewhat, notice, doesnt], excluding "do not attend"
     // =========================
-    const stateCategory = {
-      "Alabama":"neutral",
-      "Alaska":"neutral",
-      "Arizona":"neutral",
-      "Arkansas":"some",
-      "California":"neutral",
-      "Colorado":"some",
-      "Connecticut":"neutral",
-      "Delaware":"neutral",
-      "Florida":"neutral",
-      "Georgia":"neutral",
-      "Hawaii":"neutral",
-      "Idaho":"doesnt",
-      "Illinois":"some",
-      "Indiana":"neutral",
-      "Iowa":"some",
-      "Kansas":"neutral",
-      "Kentucky":"neutral",
-      "Louisiana":"neutral",
-      "Maine":"judged",
-      "Maryland":"some",
-      "Massachusetts":"some",
-      "Michigan":"neutral",
-      "Minnesota":"some",
-      "Mississippi":"neutral",
-      "Missouri":"judged",
-      "Montana":"neutral",
-      "Nebraska":"neutral",
-      "Nevada":"neutral",
-      "New Hampshire":"neutral",
-      "New Jersey":"neutral",
-      "New Mexico":"neutral",
-      "New York":"neutral",
-      "North Carolina":"some",
-      "North Dakota":"some",
-      "Ohio":"neutral",
-      "Oklahoma":"neutral",
-      "Oregon":"neutral",
-      "Pennsylvania":"some",
-      "Rhode Island":"neutral",
-      "South Carolina":"neutral",
-      "South Dakota":"neutral",
-      "Tennessee":"neutral",
-      "Texas":"some",
-      "Utah":"some",
-      "Vermont":"some",
-      "Virginia":"some",
-      "Washington":"neutral",
-      "West Virginia":"neutral",
-      "Wisconsin":"neutral",
-      "Wyoming":"some"
+    const Q5 = {
+      "Alabama":      {strong:15, some:18, notice:35, doesnt:23, noParty:8},
+      "Alaska":       {strong:8,  some:19, notice:48, doesnt:19, noParty:6},
+      "Arizona":      {strong:21, some:27, notice:31, doesnt:13, noParty:8},
+      "Arkansas":     {strong:15, some:20, notice:30, doesnt:28, noParty:8},
+      "California":   {strong:24, some:32, notice:27, doesnt:11, noParty:6},
+      "Colorado":     {strong:18, some:16, notice:40, doesnt:16, noParty:10},
+      "Connecticut":  {strong:14, some:22, notice:43, doesnt:17, noParty:3},
+      "Delaware":     {strong:18, some:13, notice:33, doesnt:25, noParty:10},
+      "Florida":      {strong:24, some:17, notice:38, doesnt:17, noParty:3},
+      "Georgia":      {strong:20, some:20, notice:40, doesnt:15, noParty:5},
+      "Hawaii":       {strong:19, some:21, notice:21, doesnt:33, noParty:6},
+      "Idaho":        {strong:2,  some:35, notice:18, doesnt:33, noParty:12},
+      "Illinois":     {strong:11, some:18, notice:32, doesnt:23, noParty:15},
+      "Indiana":      {strong:15, some:25, notice:27, doesnt:23, noParty:10},
+      "Iowa":         {strong:14, some:20, notice:34, doesnt:17, noParty:15},
+      "Kansas":       {strong:8,  some:20, notice:32, doesnt:30, noParty:10},
+      "Kentucky":     {strong:20, some:20, notice:34, doesnt:20, noParty:7},
+      "Louisiana":    {strong:29, some:25, notice:26, doesnt:15, noParty:5},
+      "Maine":        {strong:15, some:25, notice:32, doesnt:22, noParty:7},
+      "Maryland":     {strong:12, some:28, notice:25, doesnt:25, noParty:11},
+      "Massachusetts":{strong:23, some:13, notice:31, doesnt:20, noParty:13},
+      "Michigan":     {strong:23, some:24, notice:27, doesnt:15, noParty:11},
+      "Minnesota":    {strong:5,  some:15, notice:48, doesnt:18, noParty:13},
+      "Mississippi":  {strong:32, some:20, notice:23, doesnt:18, noParty:7},
+      "Missouri":     {strong:20, some:15, notice:39, doesnt:19, noParty:7},
+      "Montana":      {strong:9,  some:15, notice:40, doesnt:20, noParty:16},
+      "Nebraska":     {strong:12, some:8,  notice:48, doesnt:18, noParty:13},
+      "Nevada":       {strong:17, some:15, notice:31, doesnt:25, noParty:12},
+      "New Hampshire":{strong:15, some:20, notice:42, doesnt:18, noParty:5},
+      "New Jersey":   {strong:21, some:19, notice:29, doesnt:23, noParty:8},
+      "New Mexico":   {strong:13, some:18, notice:33, doesnt:26, noParty:10},
+      "New York":     {strong:22, some:36, notice:30, doesnt:6,  noParty:6},
+      "North Carolina":{strong:17, some:38, notice:22, doesnt:14, noParty:8},
+      "North Dakota": {strong:17, some:26, notice:19, doesnt:28, noParty:10},
+      "Ohio":         {strong:17, some:25, notice:38, doesnt:16, noParty:3},
+      "Oklahoma":     {strong:13, some:23, notice:31, doesnt:20, noParty:13},
+      "Oregon":       {strong:10, some:30, notice:28, doesnt:25, noParty:8},
+      "Pennsylvania": {strong:17, some:26, notice:29, doesnt:20, noParty:8},
+      "Rhode Island": {strong:15, some:22, notice:45, doesnt:13, noParty:5},
+      "South Carolina":{strong:5,  some:15, notice:44, doesnt:22, noParty:14},
+      "South Dakota": {strong:16, some:23, notice:30, doesnt:25, noParty:7},
+      "Tennessee":    {strong:22, some:23, notice:28, doesnt:18, noParty:8},
+      "Texas":        {strong:19, some:36, notice:23, doesnt:9,  noParty:13},
+      "Utah":         {strong:13, some:28, notice:30, doesnt:18, noParty:11},
+      "Vermont":      {strong:11, some:24, notice:37, doesnt:16, noParty:13},
+      "Virginia":     {strong:13, some:28, notice:36, doesnt:16, noParty:7},
+      "Washington":   {strong:19, some:27, notice:33, doesnt:16, noParty:6},
+      "West Virginia":{strong:15, some:20, notice:31, doesnt:29, noParty:5},
+      "Wisconsin":    {strong:13, some:14, notice:44, doesnt:24, noParty:5},
+      "Wyoming":      {strong:22, some:27, notice:27, doesnt:18, noParty:5}
     };
 
-    // USPS abbreviations (for tiny states + optional fallback)
+    // IMPORTANT CORRECTIONS from your earlier map:
+    // - Mississippi should be "Not Judged" in your earlier labeling, but based on the table you pasted,
+    //   Mississippi actually has Strongly=32 (highest) => "Hosts are judged".
+    // - Minnesota based on the table is "Not Judged" (48 highest).
+    //
+    // The Q5 object above reflects the exact figures per your pasted row order for each state.
+
+    // =========================
+    // Build winner category per state
+    // =========================
+    function pickCategory(st){
+      const v = Q5[st];
+      if(!v) return null;
+      const options = [
+        ["judged",  v.strong],
+        ["some",    v.some],
+        ["neutral", v.notice],
+        ["doesnt",  v.doesnt]
+      ];
+      options.sort((a,b)=> b[1]-a[1]);
+      return { key: options[0][0], pct: options[0][1] };
+    }
+
+    const stateCategory = {};
+    Object.keys(Q5).forEach(st => {
+      const w = pickCategory(st);
+      if(w) stateCategory[st] = w;
+    });
+
+    // USPS abbreviations (tiny states)
     const USPS = {
       "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT",
       "Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA",
@@ -449,13 +464,11 @@
       "Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
     };
 
-    // States where we force abbreviations (tiny / crowded)
     const forceAbbrev = new Set([
       "Connecticut","Delaware","Maryland","Massachusetts","New Hampshire","New Jersey",
       "Rhode Island","Vermont"
     ]);
 
-    // Northeast nudges so text doesn’t collide
     const labelOffsets = {
       "Rhode Island":[10, 10],
       "Connecticut":[-10, 8],
@@ -468,9 +481,7 @@
       "Hawaii":[10, 6]
     };
 
-    // =========================
     // Tooltip helpers
-    // =========================
     const tooltip = d3.select("#tt");
     function esc(s){
       return String(s).replace(/[&<>"']/g, c => ({
@@ -487,29 +498,27 @@
       tooltip.style("left", x+"px").style("top", y+"px");
     }
     function showTip(event, stateName){
-      const key = stateCategory[stateName];
-      if(!key) return;
+      const w = stateCategory[stateName];
+      if(!w) return;
+      const cat = CATS[w.key];
       tooltip
         .style("display","block")
         .html(
           `<strong>${esc(stateName)}</strong>
-           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(CATS[key].label)}</div>
-           <div class="pill" style="background:${CATS[key].badge}">Snack hospitality signal</div>`
+           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(cat.label)} <span style="font-weight:900;opacity:0.75">(${w.pct}%)</span></div>
+           <div class="pill" style="background:${cat.badge}">Snack hospitality signal</div>`
         );
       placeTooltip(event);
     }
     function hideTip(){ tooltip.style("display","none"); }
 
-    // =========================
     // Draw map + labels
-    // =========================
     const svg = d3.select("#map");
     const W = 975, H = 610;
     const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
     const path = d3.geoPath(projection);
 
     function getLabelFont(){
-      // small, but readable; scales down on mobile
       return window.innerWidth < 520 ? 11 : 12.5;
     }
 
@@ -531,8 +540,8 @@
         .attr("d", path)
         .attr("fill", d => {
           const name = d.properties && d.properties.name;
-          const key = stateCategory[name];
-          return key ? CATS[key].fill : "rgba(26,39,48,0.08)";
+          const w = stateCategory[name];
+          return w ? CATS[w.key].fill : "rgba(26,39,48,0.08)";
         })
         .on("mousemove", (event, d) => {
           const name = d.properties && d.properties.name;
@@ -553,24 +562,25 @@
         .attr("class","state-outline")
         .attr("d", path);
 
-      // Labels (category words on-state)
+      // Labels
       const fontSize = getLabelFont();
       const gLabels = svg.append("g").attr("class","labels");
 
       const labelPoints = cachedFeatures.map(f => {
         const name = f.properties && f.properties.name;
-        const key = stateCategory[name];
-        if(!key) return null;
+        const w = stateCategory[name];
+        if(!w) return null;
 
         const c = path.centroid(f);
         if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
 
         const [dx,dy] = labelOffsets[name] || [0,0];
 
-        // Use abbrev for tiny states; otherwise show short category word
-        const txt = forceAbbrev.has(name) ? `${USPS[name]} · ${CATS[key].short}` : CATS[key].short;
+        const txt = forceAbbrev.has(name)
+          ? `${USPS[name]} · ${CATS[w.key].short}`
+          : CATS[w.key].short;
 
-        return { name, x:c[0]+dx, y:c[1]+dy, text:txt, key };
+        return { name, x:c[0]+dx, y:c[1]+dy, text:txt };
       }).filter(Boolean);
 
       gLabels.selectAll("text")
@@ -597,9 +607,7 @@
       t = setTimeout(() => renderMap(), 120);
     });
 
-    // =========================
     // Embed logic
-    // =========================
     const embedToggle = document.getElementById("embedToggle");
     const embedPanel  = document.getElementById("embedPanel");
     const embedCode   = document.getElementById("embedCode");
@@ -608,7 +616,7 @@
       embedCode.value =
 `<iframe
   src="https://aharris-jpg.github.io/super-bowl-snacks2/host-judgment-by-state.html"
-  title="Snack Hospitality Pressure — by State"
+  title="Where Super Bowl Hosts Get Judged on Snacks — by State"
   width="100%" height="980"
   style="border:0;overflow:hidden;display:block;width:100%;"
   loading="lazy"></iframe>`;
@@ -631,3 +639,4 @@
   </script>
 </body>
 </html>
+
