@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>America’s Favorite Super Bowl Dip — by State</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- D3 + TopoJSON -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+  <style>
+    :root{
+      /* Pastel "game day" background */
+      --bgTop:#e9fbf6;
+      --bgBottom:#fff6f2;
+
+      --ink:#1a2730;
+      --muted:rgba(26,39,48,0.70);
+
+      --accent:#5677ff;     /* blue ribbon */
+      --accentDeep:#3f5fe6;
+
+      --card:rgba(255,255,255,0.70);
+      --border:rgba(26,39,48,0.10);
+      --shadow:0 18px 46px rgba(0,0,0,0.12);
+
+      --radius:18px;
+      --mapStroke:#ffffff;
+      --mapStrokeW:6.2;
+
+      --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      min-height:100vh;
+      padding:22px 14px 26px;
+      background:
+        radial-gradient(1000px 620px at 75% 18%, rgba(255,179,199,0.28), transparent 55%),
+        radial-gradient(900px 640px at 20% 18%, rgba(168,230,222,0.26), transparent 56%),
+        radial-gradient(900px 650px at 55% 88%, rgba(255,198,168,0.26), transparent 58%),
+        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
+      overflow-x:hidden;
+    }
+
+    .wrap{ max-width:1040px; margin:0 auto; }
+
+    /* ===== Header ===== */
+    .hero{
+      position:relative;
+      padding:10px 0 10px;
+      margin-bottom:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .flag{
+      flex:0 0 auto;
+      background:linear-gradient(180deg, var(--accent), var(--accentDeep));
+      color:#fff;
+      padding:12px 14px 12px 16px;
+      border-radius:12px;
+      box-shadow:0 14px 34px rgba(86,119,255,0.22);
+      font-weight:950;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      line-height:1.05;
+      min-width:128px;
+    }
+    .flag .star{ margin-left:6px; }
+    .flag small{ display:block; font-size:12px; opacity:0.95; }
+    .flag b{ display:block; font-size:14px; }
+
+    .headcopy{ flex:1; min-width:0; }
+    .title{
+      margin:0;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:0.02em;
+      line-height:0.95;
+      font-size:clamp(28px, 4.6vw, 52px);
+      color:var(--accent);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    }
+    .subtitle{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-weight:800;
+      font-size:clamp(13px, 1.8vw, 16px);
+    }
+
+    @media (max-width:720px){
+      .hero{ flex-direction:column; align-items:flex-start; }
+      .flag{ min-width:auto; }
+    }
+
+    /* ===== Card ===== */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .map-area{ padding:16px 16px 12px; }
+
+    .map-frame{
+      position:relative;
+      border-radius:16px;
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.55);
+      overflow:hidden;
+    }
+
+    /* subtle diagonal highlight band */
+    .map-frame:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(165deg,
+          rgba(255,255,255,0.0) 0%,
+          rgba(255,255,255,0.0) 35%,
+          rgba(255,255,255,0.26) 36%,
+          rgba(255,255,255,0.26) 58%,
+          rgba(255,255,255,0.0) 59%,
+          rgba(255,255,255,0.0) 100%);
+      pointer-events:none;
+      opacity:0.55;
+    }
+
+    svg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
+
+    .state{
+      stroke:var(--mapStroke);
+      stroke-width:var(--mapStrokeW);
+      stroke-linejoin:round;
+      stroke-linecap:round;
+    }
+    .state:hover{
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
+    }
+
+    .state-outline{
+      fill:none;
+      stroke:rgba(26,39,48,0.08);
+      stroke-width:1;
+      pointer-events:none;
+    }
+
+    /* Icon layer */
+    .icons-layer image{
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.16));
+      opacity:0.98;
+    }
+
+    /* Tooltip */
+    .tooltip{
+      position:absolute;
+      pointer-events:none;
+      display:none;
+      z-index:100;
+      background:rgba(255,255,255,0.96);
+      border:1px solid rgba(26,39,48,0.14);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.16);
+      max-width:260px;
+      backdrop-filter: blur(10px);
+    }
+    .tooltip strong{
+      display:block;
+      font-weight:950;
+      margin-bottom:4px;
+      color:rgba(26,39,48,0.92);
+    }
+    .tooltip .pill{
+      display:inline-block;
+      margin-top:6px;
+      font-size:11px;
+      font-weight:950;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      letter-spacing:0.02em;
+      white-space:nowrap;
+    }
+
+    /* ===== Bottom section ===== */
+    .section{
+      padding:12px 16px 14px;
+      border-top:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.55);
+    }
+
+    .ribbon{
+      margin:6px auto 10px;
+      max-width:620px;
+      text-align:center;
+      background:linear-gradient(90deg, var(--accentDeep), var(--accent));
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:0.05em;
+      text-transform:uppercase;
+      border-radius:12px;
+      padding:10px 12px;
+      box-shadow:0 14px 30px rgba(86,119,255,0.18);
+    }
+
+    .hint{
+      text-align:center;
+      margin:-2px auto 12px;
+      color:rgba(26,39,48,0.66);
+      font-weight:850;
+      font-size:11.5px;
+      letter-spacing:0.02em;
+      text-transform:uppercase;
+    }
+
+    .cols{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+    }
+
+    @media (max-width:880px){
+      .cols{ grid-template-columns:1fr; }
+    }
+
+    .col{
+      background:rgba(255,255,255,0.66);
+      border:1px solid rgba(26,39,48,0.10);
+      border-radius:14px;
+      overflow:hidden;
+    }
+
+    .colhead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px 8px;
+      border-bottom:1px solid rgba(26,39,48,0.08);
+    }
+
+    .hleft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .dip-ico{
+      width:22px; height:22px;
+      object-fit:contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
+      flex:0 0 auto;
+    }
+
+    .htext{ min-width:0; }
+    .dipname{
+      font-weight:1000;
+      font-size:13px;
+      color:rgba(26,39,48,0.92);
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:210px;
+    }
+    .dipsub{
+      margin-top:3px;
+      font-weight:850;
+      font-size:11px;
+      color:rgba(26,39,48,0.62);
+      line-height:1.1;
+    }
+
+    .badge{
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      white-space:nowrap;
+    }
+
+    .rows{ padding:10px; }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 8px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.66);
+      border:1px solid rgba(26,39,48,0.06);
+      margin-bottom:8px;
+    }
+    .row:last-child{ margin-bottom:0; }
+
+    .rank{
+      width:22px;
+      height:22px;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      font-size:11px;
+      color:rgba(26,39,48,0.82);
+      background:rgba(26,39,48,0.06);
+      flex:0 0 auto;
+    }
+
+    .stname{
+      flex:1;
+      font-weight:950;
+      font-size:12px;
+      color:rgba(26,39,48,0.90);
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* ===== Footer / Methodology / Embed ===== */
+    .method{
+      padding:10px 16px 12px;
+      font-size:11px;
+      line-height:1.35;
+      color:rgba(26,39,48,0.66);
+      border-top:1px solid rgba(26,39,48,0.08);
+      background:rgba(255,255,255,0.55);
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .method strong{ color:rgba(26,39,48,0.82); }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-left:auto;
+    }
+    .logo{
+      height:36px;
+      width:auto;
+      display:block;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,0.12));
+    }
+
+    .embed{
+      padding:12px 16px 16px;
+      background:rgba(255,255,255,0.55);
+      border-top:1px solid rgba(26,39,48,0.08);
+    }
+    .embed-btn{
+      appearance:none;
+      border:1px solid rgba(26,39,48,0.14);
+      background:linear-gradient(90deg, rgba(86,119,255,0.95), rgba(122,164,255,0.95));
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:0.02em;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(86,119,255,0.16);
+    }
+    .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
+    .embed-panel[hidden]{ display:none; }
+    .embed-panel{
+      margin-top:10px;
+      border:1px solid rgba(26,39,48,0.12);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(255,255,255,0.62);
+    }
+    .embed-panel .ehint{
+      padding:10px 12px;
+      font-size:11px;
+      color:rgba(26,39,48,0.70);
+      border-bottom:1px solid rgba(26,39,48,0.10);
+      font-weight:850;
+    }
+    .embed-panel textarea{
+      width:100%;
+      height:120px;
+      padding:10px 12px;
+      border:0;
+      outline:none;
+      resize:none;
+      background:transparent;
+      color:rgba(26,39,48,0.88);
+      font:12px/1.4 var(--mono);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="flag"><small>EACH STATE’S</small><b>#1 <span class="star">★</span></b></div>
+      <div class="headcopy">
+        <h1 class="title">America’s Favorite<br/>Super Bowl Dip</h1>
+        <div class="subtitle">Top dip in each state (survey results)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="map-area">
+        <div class="map-frame">
+          <svg id="map" viewBox="0 0 975 610" role="img" aria-label="America’s Favorite Super Bowl Dip map"></svg>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="ribbon">Top picks at a glance</div>
+        <div class="hint">Most common #1 dips • Top 5 states where each dip wins</div>
+        <div class="cols" id="cols"></div>
+      </div>
+
+      <div class="method">
+        <div>
+          <strong>Methodology:</strong> We selected the most-chosen dip in each state (Q4).
+          “Other” and “I do not eat any dips” were excluded. Ties were broken using the national result from the “Total” column.
+        </div>
+        <div class="brand" aria-label="Brand">
+          <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
+        </div>
+      </div>
+
+      <!-- Embed block -->
+      <div class="embed">
+        <button class="embed-btn" id="embedToggle" type="button" aria-controls="embedPanel" aria-expanded="false">
+          Get embed code
+        </button>
+
+        <div class="embed-panel" id="embedPanel" hidden>
+          <div class="ehint">Copy/paste this iframe. Replace the <strong>src</strong> with your hosted URL.</div>
+          <textarea id="embedCode" readonly onclick="this.select()"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tt"></div>
+
+  <script>
+    // =========================
+    // ICON URLS (your final URLs)
+    // =========================
+    const ICONS = {
+      buffalo: "https://i.postimg.cc/CxM80J8c/buffalo_chicken_dip_removebg_preview.png",
+      crab:    "https://i.postimg.cc/J45XSSsT/crab_dip.png",
+      french:  "https://i.postimg.cc/Z5YNmjNj/french_onion_dip_removebg_preview.png",
+      guac:    "https://i.postimg.cc/W1pZVSZn/gaucamole.png",
+      hummus:  "https://i.postimg.cc/KvDTCC1r/hummus.png",
+      queso:   "https://i.postimg.cc/t4R6bD6k/queso_dip_removebg_preview.png",
+      ranch:   "https://i.postimg.cc/QxJ7vvFy/ranch_dip.png",
+      rotel:   "https://i.postimg.cc/KvDTCC1Q/rotel_dip.png",
+      salsa:   "https://i.postimg.cc/DyPGRRSH/salsa.png",
+      seven:   "https://i.postimg.cc/X7k5ttrh/seven_layer_dip.png",
+      spinach: "https://i.postimg.cc/bN9n44Zg/spinach_dip.png"
+    };
+
+    // Pastel fills per dip (pretty + distinct)
+    const dipColor = {
+      buffalo: "#FFC6A8", // peach
+      french:  "#FFE2A8", // butter
+      queso:   "#FFD68A", // warm gold
+      guac:    "#CFF3B7", // soft green
+      salsa:   "#FFB3C7", // blush
+      ranch:   "#CFE8FF", // baby blue
+      seven:   "#D6C8FF", // lavender
+      spinach: "#BFE8E0", // mint
+      rotel:   "#FFCCB6", // apricot
+      crab:    "#F2D6FF", // lilac-pink
+      hummus:  "#E7D9C8"  // sand
+    };
+
+    const badgeColor = {
+      buffalo: "rgba(255,132,90,0.95)",
+      french:  "rgba(244,182,72,0.95)",
+      queso:   "rgba(240,160,50,0.95)",
+      guac:    "rgba(112,200,108,0.95)",
+      salsa:   "rgba(255,107,151,0.95)",
+      ranch:   "rgba(86,119,255,0.95)",
+      seven:   "rgba(150,120,255,0.95)",
+      spinach: "rgba(60,189,176,0.95)",
+      rotel:   "rgba(245,132,106,0.95)",
+      crab:    "rgba(180,120,220,0.95)",
+      hummus:  "rgba(160,120,80,0.95)"
+    };
+
+    // Dips included in winner selection (exclude Other + I do not eat)
+    const featuredDips = ["buffalo","french","queso","guac","salsa","ranch","seven","spinach","rotel","crab","hummus"];
+
+    // National Total shares (tie-break)
+    const totalShare = {
+      buffalo: 15,
+      french:  14,
+      queso:   12,
+      guac:    10,
+      salsa:   9,
+      ranch:   9,
+      seven:   6,
+      spinach: 3,
+      rotel:   5,
+      crab:    4,
+      hummus:  2
+    };
+
+    // =========================
+    // Q4 State data (winner computed per state)
+    // NOTE: If you already pasted a full stateShares object earlier,
+    // keep it and ensure keys match the dip ids above.
+    // =========================
+    // For your current working version: keep your existing full stateShares object
+    // (buffalo/french/queso/guac/salsa/ranch/seven/spinach/rotel/crab/hummus)
+    // and DO NOT include "Other" / "I do not eat any dips" in the winner loop.
+
+    // 👉 IMPORTANT:
+    // Paste your full Q4 stateShares object here (same structure as your snack map).
+    // It should look like:
+    // const stateShares = { "Alabama": {buffalo:22, french:10, queso:13, ...}, ... };
+
+    const stateShares = {
+      "Alabama":      {buffalo:22,french:10,queso:13,guac:7,salsa:10,ranch:15,seven:2,spinach:2,rotel:10,crab:3,hummus:0},
+      "Alaska":       {buffalo:8,french:8,queso:12,guac:10,salsa:17,ranch:10,seven:13,spinach:2,rotel:4,crab:2,hummus:0},
+      "Arizona":      {buffalo:13,french:11,queso:11,guac:19,salsa:18,ranch:10,seven:2,spinach:3,rotel:0,crab:3,hummus:2},
+      "Arkansas":     {buffalo:8,french:11,queso:18,guac:10,salsa:7,ranch:5,seven:3,spinach:2,rotel:23,crab:3,hummus:2},
+      "California":   {buffalo:8,french:13,queso:10,guac:19,salsa:11,ranch:14,seven:5,spinach:2,rotel:0,crab:3,hummus:3},
+      "Colorado":     {buffalo:8,french:13,queso:23,guac:18,salsa:5,ranch:3,seven:8,spinach:3,rotel:0,crab:2,hummus:5},
+      "Connecticut":  {buffalo:27,french:16,queso:13,guac:11,salsa:5,ranch:5,seven:5,spinach:0,rotel:0,crab:2,hummus:2},
+      "Delaware":     {buffalo:23,french:18,queso:7,guac:5,salsa:7,ranch:3,seven:3,spinach:3,rotel:3,crab:15,hummus:2},
+      "Florida":      {buffalo:17,french:22,queso:5,guac:11,salsa:8,ranch:10,seven:6,spinach:5,rotel:3,crab:3,hummus:3},
+      "Georgia":      {buffalo:18,french:15,queso:7,guac:7,salsa:5,ranch:5,seven:7,spinach:7,rotel:10,crab:7,hummus:0},
+      "Hawaii":       {buffalo:6,french:10,queso:2,guac:17,salsa:10,ranch:10,seven:6,spinach:8,rotel:4,crab:8,hummus:0},
+      "Idaho":        {buffalo:8,french:7,queso:10,guac:10,salsa:15,ranch:7,seven:10,spinach:3,rotel:2,crab:5,hummus:2},
+      "Illinois":     {buffalo:20,french:12,queso:8,guac:12,salsa:14,ranch:8,seven:5,spinach:2,rotel:3,crab:0,hummus:6},
+      "Indiana":      {buffalo:22,french:7,queso:22,guac:8,salsa:3,ranch:13,seven:2,spinach:5,rotel:5,crab:3,hummus:2},
+      "Iowa":         {buffalo:19,french:14,queso:14,guac:8,salsa:15,ranch:7,seven:5,spinach:0,rotel:3,crab:2,hummus:0},
+      "Kansas":       {buffalo:12,french:10,queso:18,guac:10,salsa:10,ranch:7,seven:7,spinach:2,rotel:13,crab:3,hummus:2},
+      "Kentucky":     {buffalo:13,french:10,queso:16,guac:3,salsa:2,ranch:16,seven:5,spinach:5,rotel:8,crab:7,hummus:2},
+      "Louisiana":    {buffalo:14,french:8,queso:14,guac:8,salsa:15,ranch:19,seven:3,spinach:3,rotel:20,crab:0,hummus:0},
+      "Maine":        {buffalo:17,french:23,queso:10,guac:10,salsa:5,ranch:7,seven:7,spinach:2,rotel:0,crab:7,hummus:0},
+      "Maryland":     {buffalo:14,french:22,queso:3,guac:3,salsa:3,ranch:6,seven:3,spinach:6,rotel:2,crab:26,hummus:5},
+      "Massachusetts":{buffalo:23,french:23,queso:5,guac:8,salsa:10,ranch:2,seven:2,spinach:3,rotel:2,crab:3,hummus:3},
+      "Michigan":     {buffalo:10,french:10,queso:8,guac:8,salsa:10,ranch:13,seven:6,spinach:5,rotel:5,crab:10,hummus:2},
+      "Minnesota":    {buffalo:10,french:13,queso:15,guac:15,salsa:10,ranch:7,seven:5,spinach:2,rotel:2,crab:0,hummus:0},
+      "Mississippi":  {buffalo:13,french:15,queso:12,guac:7,salsa:7,ranch:3,seven:3,spinach:0,rotel:23,crab:8,hummus:0},
+      "Missouri":     {buffalo:10,french:8,queso:17,guac:3,salsa:14,ranch:8,seven:10,spinach:7,rotel:15,crab:3,hummus:3},
+      "Montana":      {buffalo:2,french:20,queso:11,guac:15,salsa:11,ranch:15,seven:7,spinach:7,rotel:0,crab:2,hummus:2},
+      "Nebraska":     {buffalo:8,french:12,queso:25,guac:8,salsa:7,ranch:12,seven:7,spinach:5,rotel:7,crab:2,hummus:0},
+      "Nevada":       {buffalo:12,french:8,queso:7,guac:19,salsa:14,ranch:19,seven:3,spinach:3,rotel:0,crab:2,hummus:7},
+      "New Hampshire":{buffalo:20,french:27,queso:8,guac:3,salsa:8,ranch:7,seven:10,spinach:2,rotel:0,crab:0,hummus:5},
+      "New Jersey":   {buffalo:16,french:11,queso:8,guac:8,salsa:13,ranch:11,seven:6,spinach:8,rotel:2,crab:2,hummus:3},
+      "New Mexico":   {buffalo:3,french:10,queso:18,guac:25,salsa:15,ranch:7,seven:7,spinach:2,rotel:2,crab:0,hummus:2},
+      "New York":     {buffalo:31,french:23,queso:8,guac:6,salsa:13,ranch:8,seven:0,spinach:2,rotel:0,crab:2,hummus:0},
+      "North Carolina":{buffalo:11,french:8,queso:24,guac:6,salsa:11,ranch:14,seven:0,spinach:3,rotel:3,crab:8,hummus:5},
+      "North Dakota": {buffalo:16,french:10,queso:17,guac:3,salsa:9,ranch:7,seven:12,spinach:7,rotel:7,crab:5,hummus:2},
+      "Ohio":         {buffalo:25,french:13,queso:11,guac:6,salsa:6,ranch:8,seven:10,spinach:5,rotel:0,crab:0,hummus:3},
+      "Oklahoma":     {buffalo:5,french:8,queso:21,guac:13,salsa:13,ranch:15,seven:7,spinach:3,rotel:8,crab:3,hummus:0},
+      "Oregon":       {buffalo:10,french:11,queso:13,guac:15,salsa:8,ranch:10,seven:11,spinach:3,rotel:3,crab:3,hummus:2},
+      "Pennsylvania": {buffalo:31,french:14,queso:3,guac:6,salsa:11,ranch:8,seven:0,spinach:2,rotel:2,crab:8,hummus:3},
+      "Rhode Island": {buffalo:20,french:25,queso:8,guac:7,salsa:12,ranch:5,seven:8,spinach:3,rotel:0,crab:3,hummus:0},
+      "South Carolina":{buffalo:20,french:20,queso:12,guac:3,salsa:5,ranch:14,seven:2,spinach:3,rotel:2,crab:2,hummus:0},
+      "South Dakota": {buffalo:14,french:9,queso:14,guac:2,salsa:14,ranch:18,seven:7,spinach:4,rotel:5,crab:4,hummus:2},
+      "Tennessee":    {buffalo:10,french:15,queso:13,guac:8,salsa:7,ranch:10,seven:8,spinach:5,rotel:15,crab:3,hummus:2},
+      "Texas":        {buffalo:8,french:8,queso:20,guac:19,salsa:6,ranch:22,seven:5,spinach:2,rotel:3,crab:2,hummus:2},
+      "Utah":         {buffalo:8,french:10,queso:11,guac:13,salsa:11,ranch:13,seven:13,spinach:3,rotel:3,crab:3,hummus:2},
+      "Vermont":      {buffalo:11,french:26,queso:5,guac:16,salsa:8,ranch:5,seven:5,spinach:0,rotel:0,crab:0,hummus:3},
+      "Virginia":     {buffalo:11,french:21,queso:8,guac:8,salsa:10,ranch:5,seven:8,spinach:2,rotel:2,crab:3,hummus:8},
+      "Washington":   {buffalo:16,french:14,queso:13,guac:16,salsa:14,ranch:5,seven:8,spinach:3,rotel:0,crab:5,hummus:2},
+      "West Virginia":{buffalo:27,french:14,queso:8,guac:2,salsa:8,ranch:14,seven:8,spinach:3,rotel:0,crab:3,hummus:0},
+      "Wisconsin":    {buffalo:11,french:22,queso:13,guac:14,salsa:10,ranch:5,seven:10,spinach:3,rotel:0,crab:5,hummus:0},
+      "Wyoming":      {buffalo:16,french:13,queso:16,guac:9,salsa:7,ranch:13,seven:15,spinach:0,rotel:2,crab:4,hummus:0}
+    };
+
+    // =========================
+    // Winner pick (tie-break by national Total share)
+    // =========================
+    function pickWinner(stateName){
+      const s = stateShares[stateName];
+      if(!s) return null;
+
+      let bestDip = null;
+      let bestVal = -Infinity;
+
+      for(const dip of featuredDips){
+        const v = Number(s[dip] ?? -Infinity);
+        if(v > bestVal){
+          bestVal = v; bestDip = dip;
+        } else if(v === bestVal){
+          if((totalShare[dip] ?? 0) > (totalShare[bestDip] ?? 0)) bestDip = dip;
+        }
+      }
+      return { dip: bestDip };
+    }
+
+    const perState = {};
+    Object.keys(stateShares).forEach(st => {
+      const w = pickWinner(st);
+      if(w) perState[st] = w;
+    });
+
+    function winnersByDip(){
+      const out = {};
+      for(const st of Object.keys(perState)){
+        const {dip} = perState[st];
+        if(!out[dip]) out[dip] = [];
+        out[dip].push(st);
+      }
+      return out;
+    }
+
+    const byDip = winnersByDip();
+
+    function dipLabel(dip){
+      return ({
+        buffalo:"Buffalo chicken dip",
+        french:"French onion dip",
+        queso:"Queso",
+        guac:"Guacamole",
+        salsa:"Salsa",
+        ranch:"Ranch dip",
+        seven:"Seven layer dip",
+        spinach:"Spinach dip",
+        rotel:"Rotel dip",
+        crab:"Crab dip",
+        hummus:"Hummus"
+      })[dip] || dip;
+    }
+
+    // =========================
+    // Tooltip
+    // =========================
+    const tooltip = d3.select("#tt");
+
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function placeTooltip(event){
+      const rect = tooltip.node().getBoundingClientRect();
+      const pad = 10;
+      let x = event.pageX + 12;
+      let y = event.pageY + 12;
+      if (x + rect.width > window.innerWidth - pad) x = window.innerWidth - rect.width - pad;
+      if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
+      tooltip.style("left", x+"px").style("top", y+"px");
+    }
+
+    function showTip(event, stateName){
+      const w = perState[stateName];
+      if(!w) return;
+      tooltip
+        .style("display","block")
+        .html(
+          `<strong>${esc(stateName)}</strong>
+           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(dipLabel(w.dip))}</div>
+           <div class="pill" style="background:${badgeColor[w.dip] || 'rgba(26,39,48,0.8)'}">Top dip in this state</div>`
+        );
+      placeTooltip(event);
+    }
+
+    function hideTip(){ tooltip.style("display","none"); }
+
+    // =========================
+    // Bottom columns (Top 3 dips by # of wins; Top 5 states each)
+    // =========================
+    function renderColumns(){
+      const cols = document.getElementById("cols");
+
+      const sorted = Object.keys(byDip)
+        .sort((a,b)=> (byDip[b].length - byDip[a].length) || a.localeCompare(b))
+        .slice(0,3);
+
+      cols.innerHTML = sorted.map(dip => {
+        const winCount = byDip[dip].length;
+        const topStates = byDip[dip].slice(0,5); // no %; just a clean list
+
+        const tint = dipColor[dip] || "rgba(0,0,0,0.03)";
+        const headBg = `linear-gradient(180deg, ${tint}, rgba(255,255,255,0.75))`;
+
+        return `
+          <div class="col">
+            <div class="colhead" style="background:${headBg}">
+              <div class="hleft">
+                <img class="dip-ico" src="${ICONS[dip]}" alt="">
+                <div class="htext">
+                  <div class="dipname">${esc(dipLabel(dip))}</div>
+                  <div class="dipsub">#1 in ${winCount} state${winCount===1?"":"s"}</div>
+                </div>
+              </div>
+              <div class="badge" style="background:${badgeColor[dip] || 'rgba(26,39,48,0.8)'}">${winCount} States</div>
+            </div>
+
+            <div class="rows">
+              ${topStates.map((st,i)=>`
+                <div class="row">
+                  <div class="rank">${i+1}</div>
+                  <div class="stname">${esc(st)}</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    renderColumns();
+
+    // =========================
+    // Draw map + icons
+    // =========================
+    const svg = d3.select("#map");
+    svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+    const W = 975, H = 610;
+    const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
+    const path = d3.geoPath(projection);
+
+    const offsets = {
+      "Rhode Island":[8, 10],
+      "Connecticut":[-6, 8],
+      "Massachusetts":[14, -2],
+      "New Jersey":[10, 10],
+      "Delaware":[10, 10],
+      "Maryland":[-12, 10],
+      "New Hampshire":[12, -6],
+      "Vermont":[-12, -4],
+      "Hawaii":[10, 6]
+    };
+
+    function getIconSize(){
+      return window.innerWidth < 520 ? 34 : 44;
+    }
+
+    let cachedUS = null;
+    let cachedFeatures = null;
+
+    function renderMap(){
+      if(!cachedUS || !cachedFeatures) return;
+
+      const iconSize = getIconSize();
+
+      svg.selectAll("*").remove();
+      svg.attr("viewBox", `0 0 ${W} ${H}`);
+
+      svg.append("g")
+        .selectAll("path")
+        .data(cachedFeatures)
+        .join("path")
+        .attr("class","state")
+        .attr("d", path)
+        .attr("fill", d => {
+          const name = d.properties && d.properties.name;
+          const w = perState[name];
+          if(!w) return "rgba(26,39,48,0.08)";
+          return dipColor[w.dip] || "rgba(26,39,48,0.10)";
+        })
+        .on("mousemove", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!perState[name]) return hideTip();
+          showTip(event, name);
+        })
+        .on("mouseout", hideTip)
+        .on("click", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!perState[name]) return hideTip();
+          showTip(event, name);
+          event.stopPropagation();
+        });
+
+      svg.append("path")
+        .datum(topojson.mesh(cachedUS, cachedUS.objects.states, (a,b)=>a!==b))
+        .attr("class","state-outline")
+        .attr("d", path);
+
+      const gIcons = svg.append("g").attr("class","icons-layer");
+
+      const points = cachedFeatures.map(f => {
+        const name = f.properties && f.properties.name;
+        const w = perState[name];
+        if(!w) return null;
+        const c = path.centroid(f);
+        if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
+        const [dx,dy] = offsets[name] || [0,0];
+        return { name, x:c[0]+dx, y:c[1]+dy, dip: w.dip };
+      }).filter(Boolean);
+
+      gIcons.selectAll("image")
+        .data(points)
+        .join("image")
+        .attr("href", d => ICONS[d.dip] || "")
+        .attr("xlink:href", d => ICONS[d.dip] || "")
+        .attr("width", iconSize)
+        .attr("height", iconSize)
+        .attr("x", d => d.x - iconSize/2)
+        .attr("y", d => d.y - iconSize/2)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .on("mousemove", (event, d) => showTip(event, d.name))
+        .on("mouseout", hideTip)
+        .on("click", (event, d) => { showTip(event, d.name); event.stopPropagation(); });
+
+      document.addEventListener("click", hideTip);
+      document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") hideTip(); });
+    }
+
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+      cachedUS = us;
+      cachedFeatures = topojson.feature(us, us.objects.states).features;
+      renderMap();
+    });
+
+    let t = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(t);
+      t = setTimeout(() => renderMap(), 120);
+    });
+
+    // =========================
+    // Embed logic
+    // =========================
+    const embedToggle = document.getElementById("embedToggle");
+    const embedPanel  = document.getElementById("embedPanel");
+    const embedCode   = document.getElementById("embedCode");
+
+    if (embedCode) {
+      embedCode.value =
+`<iframe
+  src="https://aharris-jpg.github.io/super-bowl-snacks2/dips-by-state.html"
+  title="America’s Favorite Super Bowl Dip — by State"
+  width="100%" height="980"
+  style="border:0;overflow:hidden;display:block;width:100%;"
+  loading="lazy"></iframe>`;
+    }
+
+    if (embedToggle) {
+      embedToggle.addEventListener("click", () => {
+        const hidden = embedPanel.hasAttribute("hidden");
+        if (hidden) {
+          embedPanel.removeAttribute("hidden");
+          embedToggle.setAttribute("aria-expanded", "true");
+          embedToggle.textContent = "Hide embed code";
+        } else {
+          embedPanel.setAttribute("hidden", "");
+          embedToggle.setAttribute("aria-expanded", "false");
+          embedToggle.textContent = "Get embed code";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
