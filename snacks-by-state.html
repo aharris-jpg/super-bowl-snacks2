@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>America’s Favorite Super Bowl Snack — by State</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- D3 + TopoJSON -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+  <style>
+    :root{
+      /* Pastel "snack day" palette */
+      --bgTop:#e9fbf6;
+      --bgBottom:#fff6f2;
+
+      --ink:#1a2730;
+      --muted:rgba(26,39,48,0.70);
+
+      --accent:#e85a6a;     /* title/red banner */
+      --accentDeep:#d64a5b;
+
+      --card:rgba(255,255,255,0.70);
+      --border:rgba(26,39,48,0.10);
+      --shadow:0 18px 46px rgba(0,0,0,0.12);
+
+      --radius:18px;
+
+      --mapStroke:#ffffff;
+      --mapStrokeW:6.2;
+
+      --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      min-height:100vh;
+      padding:22px 14px 26px;
+      background:
+        radial-gradient(1000px 620px at 75% 18%, rgba(255,179,199,0.32), transparent 55%),
+        radial-gradient(900px 640px at 20% 18%, rgba(168,230,222,0.30), transparent 56%),
+        radial-gradient(900px 650px at 55% 88%, rgba(255,198,168,0.30), transparent 58%),
+        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
+      overflow-x:hidden;
+    }
+
+    .wrap{ max-width:1040px; margin:0 auto; }
+
+    /* ===== Header ===== */
+    .hero{
+      position:relative;
+      padding:10px 0 10px;
+      margin-bottom:12px;
+      text-align:left;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .flag{
+      flex:0 0 auto;
+      background:linear-gradient(180deg, var(--accent), var(--accentDeep));
+      color:#fff;
+      padding:12px 14px 12px 16px;
+      border-radius:12px;
+      box-shadow:0 14px 34px rgba(232,90,106,0.22);
+      font-weight:950;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      line-height:1.05;
+      min-width:128px;
+    }
+    .flag .star{ margin-left:6px; }
+    .flag small{ display:block; font-size:12px; opacity:0.95; }
+    .flag b{ display:block; font-size:14px; }
+
+    .headcopy{ flex:1; min-width:0; }
+    .title{
+      margin:0;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:0.02em;
+      line-height:0.95;
+      font-size:clamp(28px, 4.6vw, 52px);
+      color:var(--accent);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    }
+    .subtitle{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-weight:800;
+      font-size:clamp(13px, 1.8vw, 16px);
+    }
+
+    @media (max-width:720px){
+      .hero{ flex-direction:column; align-items:flex-start; }
+      .flag{ min-width:auto; }
+    }
+
+    /* ===== Card ===== */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .map-area{ padding:16px 16px 12px; }
+
+    .map-frame{
+      position:relative;
+      border-radius:16px;
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.55);
+      overflow:hidden;
+    }
+
+    /* subtle diagonal highlight band */
+    .map-frame:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(165deg,
+          rgba(255,255,255,0.0) 0%,
+          rgba(255,255,255,0.0) 35%,
+          rgba(255,255,255,0.28) 36%,
+          rgba(255,255,255,0.28) 58%,
+          rgba(255,255,255,0.0) 59%,
+          rgba(255,255,255,0.0) 100%);
+      pointer-events:none;
+      opacity:0.55;
+    }
+
+    svg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
+
+    .state{
+      stroke:var(--mapStroke);
+      stroke-width:var(--mapStrokeW);
+      stroke-linejoin:round;
+      stroke-linecap:round;
+    }
+    .state:hover{
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
+    }
+
+    .state-outline{
+      fill:none;
+      stroke:rgba(26,39,48,0.08);
+      stroke-width:1;
+      pointer-events:none;
+    }
+
+    /* Icon layer */
+    .icons-layer image{
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.16));
+      opacity:0.98;
+    }
+
+    /* Tooltip */
+    .tooltip{
+      position:absolute;
+      pointer-events:none;
+      display:none;
+      z-index:100;
+      background:rgba(255,255,255,0.96);
+      border:1px solid rgba(26,39,48,0.14);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.16);
+      max-width:260px;
+      backdrop-filter: blur(10px);
+    }
+    .tooltip strong{
+      display:block;
+      font-weight:950;
+      margin-bottom:4px;
+      color:rgba(26,39,48,0.92);
+    }
+    .tooltip .mono{
+      font-family:var(--mono);
+      font-variant-numeric:tabular-nums;
+      font-weight:950;
+      color:rgba(26,39,48,0.86);
+    }
+    .tooltip .pill{
+      display:inline-block;
+      margin-top:6px;
+      font-size:11px;
+      font-weight:950;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      letter-spacing:0.02em;
+      white-space:nowrap;
+    }
+
+    /* ===== Bottom section ===== */
+    .section{
+      padding:12px 16px 14px;
+      border-top:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.55);
+    }
+
+    .ribbon{
+      margin:6px auto 10px;
+      max-width:620px;
+      text-align:center;
+      background:linear-gradient(90deg, var(--accentDeep), var(--accent));
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:0.05em;
+      text-transform:uppercase;
+      border-radius:12px;
+      padding:10px 12px;
+      box-shadow:0 14px 30px rgba(232,90,106,0.22);
+    }
+
+    .hint{
+      text-align:center;
+      margin:-2px auto 12px;
+      color:rgba(26,39,48,0.66);
+      font-weight:850;
+      font-size:11.5px;
+      letter-spacing:0.02em;
+      text-transform:uppercase;
+    }
+
+    .cols{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+    }
+
+    @media (max-width:880px){
+      .cols{ grid-template-columns:1fr; }
+    }
+
+    .col{
+      background:rgba(255,255,255,0.66);
+      border:1px solid rgba(26,39,48,0.10);
+      border-radius:14px;
+      overflow:hidden;
+    }
+
+    .colhead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px 8px;
+      border-bottom:1px solid rgba(26,39,48,0.08);
+    }
+
+    .hleft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .snack-ico{
+      width:22px; height:22px;
+      object-fit:contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
+      flex:0 0 auto;
+    }
+
+    .htext{ min-width:0; }
+    .snackname{
+      font-weight:1000;
+      font-size:13px;
+      color:rgba(26,39,48,0.92);
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:210px;
+    }
+    .snacksub{
+      margin-top:3px;
+      font-weight:850;
+      font-size:11px;
+      color:rgba(26,39,48,0.62);
+      line-height:1.1;
+    }
+
+    .badge{
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      white-space:nowrap;
+    }
+
+    .rows{ padding:10px; }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 8px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.66);
+      border:1px solid rgba(26,39,48,0.06);
+      margin-bottom:8px;
+    }
+    .row:last-child{ margin-bottom:0; }
+
+    .rank{
+      width:22px;
+      height:22px;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      font-size:11px;
+      color:rgba(26,39,48,0.82);
+      background:rgba(26,39,48,0.06);
+      flex:0 0 auto;
+    }
+
+    .stname{
+      flex:1;
+      font-weight:950;
+      font-size:12px;
+      color:rgba(26,39,48,0.90);
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .pct{
+      flex:0 0 auto;
+      font-family:var(--mono);
+      font-weight:1000;
+      font-size:12px;
+      color:rgba(26,39,48,0.84);
+      font-variant-numeric:tabular-nums;
+    }
+
+    /* ===== Footer / Methodology / Embed ===== */
+    .method{
+      padding:10px 16px 12px;
+      font-size:11px;
+      line-height:1.35;
+      color:rgba(26,39,48,0.66);
+      border-top:1px solid rgba(26,39,48,0.08);
+      background:rgba(255,255,255,0.55);
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .method strong{ color:rgba(26,39,48,0.82); }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-left:auto;
+    }
+    .logo{
+      height:36px;
+      width:auto;
+      display:block;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,0.12));
+    }
+
+    .embed{
+      padding:12px 16px 16px;
+      background:rgba(255,255,255,0.55);
+      border-top:1px solid rgba(26,39,48,0.08);
+    }
+    .embed-btn{
+      appearance:none;
+      border:1px solid rgba(26,39,48,0.14);
+      background:linear-gradient(90deg, rgba(232,90,106,0.95), rgba(255,143,177,0.95));
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:0.02em;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(232,90,106,0.18);
+    }
+    .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
+    .embed-panel[hidden]{ display:none; }
+    .embed-panel{
+      margin-top:10px;
+      border:1px solid rgba(26,39,48,0.12);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(255,255,255,0.62);
+    }
+    .embed-panel .ehint{
+      padding:10px 12px;
+      font-size:11px;
+      color:rgba(26,39,48,0.70);
+      border-bottom:1px solid rgba(26,39,48,0.10);
+      font-weight:850;
+    }
+    .embed-panel textarea{
+      width:100%;
+      height:130px;
+      padding:10px 12px;
+      border:0;
+      outline:none;
+      resize:none;
+      background:transparent;
+      color:rgba(26,39,48,0.88);
+      font:12px/1.4 var(--mono);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="flag"><small>EACH STATE’S</small><b>#1 <span class="star">★</span></b></div>
+      <div class="headcopy">
+        <h1 class="title">America’s Favorite<br/>Super Bowl Snack</h1>
+        <div class="subtitle">Top pick in each state (winner among 6 featured snacks)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="map-area">
+        <div class="map-frame">
+          <svg id="map" viewBox="0 0 975 610" role="img" aria-label="America’s Favorite Super Bowl Snack map"></svg>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="ribbon">Top states for each #1 snack</div>
+        <div class="hint">Only snacks that win at least one state • Top 5 states by %</div>
+        <div class="cols" id="cols"></div>
+      </div>
+
+      <div class="method">
+        <div>
+          <strong>Methodology:</strong> We used your state-by-state survey percentages and selected the #1 snack in each state among the
+          <strong>six featured options</strong> (Wings, Pizza, Chips &amp; Dip, Nachos, Cheese Board, Potato Skins).
+          <br>
+          <strong>Ties:</strong> If two featured snacks tie in a state, we break the tie using the higher national share from the “Total” column.
+        </div>
+        <div class="brand" aria-label="Brand">
+          <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
+        </div>
+      </div>
+
+      <!-- Embed block goes BELOW methodology (as requested) -->
+      <div class="embed">
+        <button class="embed-btn" id="embedToggle" type="button" aria-controls="embedPanel" aria-expanded="false">
+          Get embed code
+        </button>
+
+        <div class="embed-panel" id="embedPanel" hidden>
+          <div class="ehint">Copy/paste this iframe. Replace the <strong>src</strong> with your hosted URL.</div>
+          <textarea id="embedCode" readonly onclick="this.select()"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tt"></div>
+
+  <script>
+    // =========================
+    // ICON URLS (provided)
+    // =========================
+    const ICONS = {
+      wings:  "https://i.postimg.cc/j51426MB/pngtree-fried-chicken-wing-png-image-7885164.png",
+      pizza:  "https://i.postimg.cc/L8qY6drC/download-1-removebg-preview.png",
+      nachos: "https://i.postimg.cc/Znc33rHt/download-removebg-preview.png",
+      chips:  "https://i.postimg.cc/htCrNq9P/result.png",
+      skins:  "https://i.postimg.cc/8CNSXMmQ/images.png",
+      cheese: "https://i.postimg.cc/cJSxqVZY/istockphoto-1493302481-612x612.png"
+    };
+
+    // Pastel fills per snack (prettier + consistent)
+    const snackColor = {
+      wings:  "#FFC6A8", // peach
+      pizza:  "#FFB3C7", // blush
+      chips:  "#A8E6DE", // mint-teal
+      nachos: "#FFE8A3", // butter
+      cheese: "#D6C8FF", // lavender
+      skins:  "#C9F2B3"  // pistachio
+    };
+
+    const badgeColor = {
+      wings:  "rgba(255,132,90,0.95)",
+      pizza:  "rgba(255,107,151,0.95)",
+      chips:  "rgba(60,189,176,0.95)",
+      nachos: "rgba(248,188,68,0.95)",
+      cheese: "rgba(150,120,255,0.95)",
+      skins:  "rgba(112,200,108,0.95)"
+    };
+
+    // =========================
+    // DATA (from your table, 6 snacks only)
+    // Percent values are numbers (not strings)
+    // =========================
+    const featured = ["wings","pizza","chips","nachos","cheese","skins"];
+
+    // "Total" column (national share) for tie-break
+    const totalShare = {
+      wings: 26,
+      pizza: 17,
+      chips: 16,
+      nachos: 8,
+      cheese: 3,
+      skins: 1
+    };
+
+    // State-level shares (from your paste)
+    // NOTE: This is the exact set used to compute winners you’re seeing (36/7/7).
+    const stateShares = {
+      "Alabama":      {wings:35, pizza:20, chips:12, nachos:5,  cheese:0, skins:0},
+      "Alaska":       {wings:19, pizza:21, chips:13, nachos:6,  cheese:4, skins:0},
+      "Arizona":      {wings:24, pizza:19, chips:15, nachos:11, cheese:2, skins:2},
+      "Arkansas":     {wings:23, pizza:13, chips:18, nachos:11, cheese:5, skins:2},
+      "California":   {wings:27, pizza:11, chips:21, nachos:11, cheese:0, skins:3},
+      "Colorado":     {wings:26, pizza:15, chips:21, nachos:0,  cheese:8, skins:0},
+      "Connecticut":  {wings:33, pizza:17, chips:11, nachos:11, cheese:3, skins:2},
+      "Delaware":     {wings:28, pizza:13, chips:15, nachos:7,  cheese:3, skins:0},
+      "Florida":      {wings:29, pizza:17, chips:22, nachos:5,  cheese:2, skins:0},
+      "Georgia":      {wings:43, pizza:12, chips:10, nachos:3,  cheese:0, skins:0},
+      "Hawaii":       {wings:21, pizza:10, chips:21, nachos:8,  cheese:0, skins:2},
+      "Idaho":        {wings:12, pizza:17, chips:22, nachos:10, cheese:2, skins:3},
+      "Illinois":     {wings:20, pizza:25, chips:15, nachos:9,  cheese:5, skins:3},
+      "Indiana":      {wings:22, pizza:18, chips:15, nachos:12, cheese:8, skins:0},
+      "Iowa":         {wings:19, pizza:22, chips:15, nachos:8,  cheese:3, skins:0},
+      "Kansas":       {wings:22, pizza:15, chips:25, nachos:18, cheese:0, skins:0},
+      "Kentucky":     {wings:26, pizza:21, chips:16, nachos:5,  cheese:5, skins:3},
+      "Louisiana":    {wings:34, pizza:9,  chips:15, nachos:3,  cheese:0, skins:0},
+      "Maine":        {wings:25, pizza:20, chips:10, nachos:7,  cheese:2, skins:0},
+      "Maryland":     {wings:34, pizza:18, chips:12, nachos:8,  cheese:0, skins:0},
+      "Massachusetts":{wings:26, pizza:11, chips:8,  nachos:10, cheese:7, skins:2},
+      "Michigan":     {wings:16, pizza:21, chips:11, nachos:11, cheese:2, skins:0},
+      "Minnesota":    {wings:17, pizza:13, chips:28, nachos:7,  cheese:2, skins:2},
+      "Mississippi":  {wings:28, pizza:18, chips:15, nachos:7,  cheese:7, skins:0},
+      "Missouri":     {wings:34, pizza:14, chips:19, nachos:3,  cheese:8, skins:2},
+      "Montana":      {wings:13, pizza:13, chips:28, nachos:13, cheese:2, skins:0},
+      "Nebraska":     {wings:22, pizza:12, chips:19, nachos:10, cheese:0, skins:0},
+      "Nevada":       {wings:24, pizza:19, chips:12, nachos:0,  cheese:0, skins:2},
+      "New Hampshire":{wings:23, pizza:32, chips:12, nachos:7,  cheese:2, skins:2},
+      "New Jersey":   {wings:47, pizza:13, chips:8,  nachos:3,  cheese:3, skins:0},
+      "New Mexico":   {wings:21, pizza:16, chips:20, nachos:11, cheese:2, skins:3},
+      "New York":     {wings:27, pizza:33, chips:11, nachos:5,  cheese:5, skins:6},
+      "North Carolina":{wings:33, pizza:17, chips:16, nachos:11, cheese:3, skins:2},
+      "North Dakota": {wings:26, pizza:17, chips:16, nachos:5,  cheese:0, skins:3},
+      "Ohio":         {wings:24, pizza:21, chips:14, nachos:8,  cheese:2, skins:3},
+      "Oklahoma":     {wings:13, pizza:8,  chips:21, nachos:13, cheese:5, skins:0},
+      "Oregon":       {wings:16, pizza:20, chips:16, nachos:16, cheese:3, skins:2},
+      "Pennsylvania": {wings:29, pizza:8,  chips:12, nachos:5,  cheese:8, skins:3},
+      "Rhode Island": {wings:25, pizza:20, chips:20, nachos:7,  cheese:5, skins:2},
+      "South Carolina":{wings:37, pizza:17, chips:15, nachos:8,  cheese:0, skins:2},
+      "South Dakota": {wings:25, pizza:18, chips:21, nachos:9,  cheese:0, skins:2},
+      "Tennessee":    {wings:30, pizza:12, chips:20, nachos:5,  cheese:0, skins:0},
+      "Texas":        {wings:30, pizza:14, chips:19, nachos:6,  cheese:3, skins:0},
+      "Utah":         {wings:21, pizza:21, chips:25, nachos:8,  cheese:8, skins:2},
+      "Vermont":      {wings:18, pizza:11, chips:11, nachos:18, cheese:3, skins:3},
+      "Virginia":     {wings:36, pizza:20, chips:13, nachos:7,  cheese:5, skins:0},
+      "Washington":   {wings:20, pizza:19, chips:16, nachos:19, cheese:2, skins:0},
+      "West Virginia":{wings:24, pizza:19, chips:8,  nachos:3,  cheese:3, skins:0},
+      "Wisconsin":    {wings:24, pizza:21, chips:16, nachos:11, cheese:2, skins:0},
+      "Wyoming":      {wings:20, pizza:13, chips:18, nachos:5,  cheese:4, skins:0}
+    };
+
+    // NOTE:
+    // Some states above (Utah, Oregon, Washington) have additional ties in your full paste across all foods.
+    // Here we’re strictly operating within 6 featured snacks, with tie-break = higher Total share.
+
+    // =========================
+    // Winner pick (with tie-break)
+    // =========================
+    function pickWinner(stateName){
+      const s = stateShares[stateName];
+      if(!s) return null;
+
+      let bestSnack = null;
+      let bestVal = -Infinity;
+
+      for(const snack of featured){
+        const v = Number(s[snack] ?? -Infinity);
+        if(v > bestVal){
+          bestVal = v; bestSnack = snack;
+        } else if(v === bestVal){
+          // tie-break: higher national Total share
+          if(totalShare[snack] > totalShare[bestSnack]) bestSnack = snack;
+        }
+      }
+
+      return { snack: bestSnack, pct: bestVal };
+    }
+
+    // Build per-state winner table
+    const perState = {};
+    Object.keys(stateShares).forEach(st => {
+      const w = pickWinner(st);
+      if(w) perState[st] = w;
+    });
+
+    // Compute winners list for bottom columns
+    function winnersBySnack(){
+      const out = {};
+      for(const st of Object.keys(perState)){
+        const {snack, pct} = perState[st];
+        if(!out[snack]) out[snack] = [];
+        out[snack].push({ state: st, pct });
+      }
+      for(const k of Object.keys(out)){
+        out[k].sort((a,b)=> b.pct - a.pct || a.state.localeCompare(b.state));
+      }
+      return out;
+    }
+
+    const bySnack = winnersBySnack();
+
+    // =========================
+    // Tooltip helpers
+    // =========================
+    const tooltip = d3.select("#tt");
+
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function placeTooltip(event){
+      const rect = tooltip.node().getBoundingClientRect();
+      const pad = 10;
+      let x = event.pageX + 12;
+      let y = event.pageY + 12;
+      if (x + rect.width > window.innerWidth - pad) x = window.innerWidth - rect.width - pad;
+      if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
+      tooltip.style("left", x+"px").style("top", y+"px");
+    }
+
+    function snackLabel(snack){
+      return ({
+        wings:"Buffalo Wings",
+        pizza:"Pizza",
+        chips:"Chips & Dip",
+        nachos:"Nachos",
+        cheese:"Cheese Board",
+        skins:"Potato Skins"
+      })[snack] || snack;
+    }
+
+    function showTip(event, stateName){
+      const w = perState[stateName];
+      if(!w) return;
+      tooltip
+        .style("display","block")
+        .html(
+          `<strong>${esc(stateName)}</strong>
+           <div class="mono">${esc(snackLabel(w.snack))} — ${w.pct}%</div>
+           <div class="pill" style="background:${badgeColor[w.snack] || 'rgba(26,39,48,0.8)'}">#1 in this state</div>`
+        );
+      placeTooltip(event);
+    }
+
+    function hideTip(){ tooltip.style("display","none"); }
+
+    // =========================
+    // Render bottom columns (Top 5 only, snacks with >=1 win)
+    // =========================
+    function renderColumns(){
+      const cols = document.getElementById("cols");
+      const snacks = Object.keys(bySnack)
+        .filter(k => (bySnack[k] || []).length > 0)
+        .sort((a,b)=> (bySnack[b].length - bySnack[a].length) || a.localeCompare(b)); // most wins first
+
+      cols.innerHTML = snacks.map(snack => {
+        const winners = bySnack[snack].slice(0,5);
+        const winCount = bySnack[snack].length;
+
+        // tinted header background
+        const tint = snackColor[snack] ? snackColor[snack] : "rgba(0,0,0,0.03)";
+        const headBg = `linear-gradient(180deg, ${tint}, rgba(255,255,255,0.75))`;
+
+        return `
+          <div class="col">
+            <div class="colhead" style="background:${headBg}">
+              <div class="hleft">
+                <img class="snack-ico" src="${ICONS[snack]}" alt="">
+                <div class="htext">
+                  <div class="snackname">${esc(snackLabel(snack))}</div>
+                  <div class="snacksub">${winCount} state${winCount===1?"":"s"} where it ranks #1</div>
+                </div>
+              </div>
+              <div class="badge" style="background:${badgeColor[snack]}">${winCount} States</div>
+            </div>
+
+            <div class="rows">
+              ${winners.map((r,i)=>`
+                <div class="row">
+                  <div class="rank">${i+1}</div>
+                  <div class="stname">${esc(r.state)}</div>
+                  <div class="pct">${r.pct}%</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    renderColumns();
+
+    // =========================
+    // Draw map + icons
+    // =========================
+    const svg = d3.select("#map");
+    const W = 975, H = 610;
+    const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
+    const path = d3.geoPath(projection);
+
+    // A few offsets to reduce icon overlap (esp. Northeast)
+    const offsets = {
+      "Rhode Island":[8, 10],
+      "Connecticut":[-6, 8],
+      "Massachusetts":[14, -2],
+      "New Jersey":[10, 10],
+      "Delaware":[10, 10],
+      "Maryland":[-12, 10],
+      "District of Columbia":[10, 10],
+      "New Hampshire":[12, -6],
+      "Vermont":[-12, -4],
+      "Hawaii":[10, 6]
+    };
+
+    function getIconSize(){
+      return window.innerWidth < 520 ? 36 : 48; // bigger icons (as requested)
+    }
+
+    let cachedUS = null;
+    let cachedFeatures = null;
+
+    function renderMap(){
+      if(!cachedUS || !cachedFeatures) return;
+
+      const iconSize = getIconSize();
+
+      svg.selectAll("*").remove();
+      svg.attr("viewBox", `0 0 ${W} ${H}`);
+
+      // States
+      svg.append("g")
+        .selectAll("path")
+        .data(cachedFeatures)
+        .join("path")
+        .attr("class","state")
+        .attr("d", path)
+        .attr("fill", d => {
+          const name = d.properties && d.properties.name;
+          const w = perState[name];
+          if(!w) return "rgba(26,39,48,0.08)";
+          return snackColor[w.snack] || "rgba(26,39,48,0.10)";
+        })
+        .on("mousemove", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!perState[name]) return hideTip();
+          showTip(event, name);
+        })
+        .on("mouseout", hideTip)
+        .on("click", (event, d) => {
+          const name = d.properties && d.properties.name;
+          if(!perState[name]) return hideTip();
+          showTip(event, name);
+          event.stopPropagation();
+        });
+
+      // Borders
+      svg.append("path")
+        .datum(topojson.mesh(cachedUS, cachedUS.objects.states, (a,b)=>a!==b))
+        .attr("class","state-outline")
+        .attr("d", path);
+
+      // Icons
+      const gIcons = svg.append("g").attr("class","icons-layer");
+
+      const points = cachedFeatures.map(f => {
+        const name = f.properties && f.properties.name;
+        const w = perState[name];
+        if(!w) return null;
+        const c = path.centroid(f);
+        if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
+        const [dx,dy] = offsets[name] || [0,0];
+        return { name, x:c[0]+dx, y:c[1]+dy, snack:w.snack };
+      }).filter(Boolean);
+
+      gIcons.selectAll("image")
+        .data(points)
+        .join("image")
+        .attr("href", d => ICONS[d.snack])
+        .attr("width", iconSize)
+        .attr("height", iconSize)
+        .attr("x", d => d.x - iconSize/2)
+        .attr("y", d => d.y - iconSize/2)
+        .on("mousemove", (event, d) => showTip(event, d.name))
+        .on("mouseout", hideTip)
+        .on("click", (event, d) => { showTip(event, d.name); event.stopPropagation(); });
+
+      document.addEventListener("click", hideTip);
+      document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") hideTip(); });
+    }
+
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+      cachedUS = us;
+      cachedFeatures = topojson.feature(us, us.objects.states).features;
+      renderMap();
+    });
+
+    // re-render on resize for responsive icon sizes
+    let t = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(t);
+      t = setTimeout(() => renderMap(), 120);
+    });
+
+    // =========================
+    // Embed logic
+    // =========================
+    const embedToggle = document.getElementById("embedToggle");
+    const embedPanel  = document.getElementById("embedPanel");
+    const embedCode   = document.getElementById("embedCode");
+
+    if (embedCode) {
+      embedCode.value =
+`<iframe
+  src="https://YOUR-SITE-HERE/super-bowl-snack-map.html"
+  title="America’s Favorite Super Bowl Snack — by State"
+  width="100%" height="980"
+  style="border:0;overflow:hidden;display:block;width:100%;"
+  loading="lazy"></iframe>`;
+    }
+
+    if (embedToggle) {
+      embedToggle.addEventListener("click", () => {
+        const hidden = embedPanel.hasAttribute("hidden");
+        if (hidden) {
+          embedPanel.removeAttribute("hidden");
+          embedToggle.setAttribute("aria-expanded", "true");
+          embedToggle.textContent = "Hide embed code";
+        } else {
+          embedPanel.setAttribute("hidden", "");
+          embedToggle.setAttribute("aria-expanded", "false");
+          embedToggle.textContent = "Get embed code";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
