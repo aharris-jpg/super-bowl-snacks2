@@ -124,7 +124,6 @@
       overflow:hidden;
     }
 
-    /* subtle diagonal highlight band */
     .map-frame:after{
       content:"";
       position:absolute;
@@ -160,7 +159,6 @@
       pointer-events:none;
     }
 
-    /* Icon layer */
     .icons-layer image{
       filter: drop-shadow(0 10px 14px rgba(0,0,0,0.16));
       opacity:0.98;
@@ -186,12 +184,6 @@
       margin-bottom:4px;
       color:rgba(26,39,48,0.92);
     }
-    .tooltip .mono{
-      font-family:var(--mono);
-      font-variant-numeric:tabular-nums;
-      font-weight:950;
-      color:rgba(26,39,48,0.86);
-    }
     .tooltip .pill{
       display:inline-block;
       margin-top:6px;
@@ -199,7 +191,9 @@
       font-weight:950;
       padding:6px 10px;
       border-radius:999px;
-      color:#fff;
+      color:rgba(26,39,48,0.86);
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.70);
       letter-spacing:0.02em;
       white-space:nowrap;
     }
@@ -213,7 +207,7 @@
 
     .ribbon{
       margin:6px auto 10px;
-      max-width:620px;
+      max-width:640px;
       text-align:center;
       background:linear-gradient(90deg, var(--accentDeep), var(--accent));
       color:#fff;
@@ -228,130 +222,78 @@
     .hint{
       text-align:center;
       margin:-2px auto 12px;
-      color:rgba(26,39,48,0.66);
+      color:rgba(26,39,48,0.64);
       font-weight:850;
       font-size:11.5px;
       letter-spacing:0.02em;
       text-transform:uppercase;
     }
 
-    .cols{
+    /* ===== Condensed A–Z grid ===== */
+    .state-grid{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
+      grid-template-columns:repeat(4, 1fr);
+      gap:8px;
+    }
+    @media (max-width:980px){
+      .state-grid{ grid-template-columns:repeat(2, 1fr); }
+    }
+    @media (max-width:560px){
+      .state-grid{ grid-template-columns:1fr; }
     }
 
-    @media (max-width:880px){
-      .cols{ grid-template-columns:1fr; }
-    }
-
-    .col{
-      background:rgba(255,255,255,0.66);
-      border:1px solid rgba(26,39,48,0.10);
-      border-radius:14px;
-      overflow:hidden;
-    }
-
-    .colhead{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 10px 8px;
-      border-bottom:1px solid rgba(26,39,48,0.08);
-    }
-
-    .hleft{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
-    .snack-ico{
-      width:22px; height:22px;
-      object-fit:contain;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
-      flex:0 0 auto;
-    }
-
-    .htext{ min-width:0; }
-    .snackname{
-      font-weight:1000;
-      font-size:13px;
-      color:rgba(26,39,48,0.92);
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:210px;
-    }
-    .snacksub{
-      margin-top:3px;
-      font-weight:850;
-      font-size:11px;
-      color:rgba(26,39,48,0.62);
-      line-height:1.1;
-    }
-
-    .badge{
-      flex:0 0 auto;
-      font-size:11px;
-      font-weight:1000;
-      padding:6px 10px;
-      border-radius:999px;
-      color:#fff;
-      white-space:nowrap;
-    }
-
-    .rows{ padding:10px; }
-
-    .row{
+    .state-item{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:8px 8px;
+      padding:8px 10px;
       border-radius:12px;
-      background:rgba(255,255,255,0.66);
-      border:1px solid rgba(26,39,48,0.06);
-      margin-bottom:8px;
-    }
-    .row:last-child{ margin-bottom:0; }
-
-    .rank{
-      width:22px;
-      height:22px;
-      border-radius:8px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      font-size:11px;
-      color:rgba(26,39,48,0.82);
-      background:rgba(26,39,48,0.06);
-      flex:0 0 auto;
+      background:rgba(255,255,255,0.62);
+      border:1px solid rgba(26,39,48,0.08);
+      box-shadow:0 10px 22px rgba(0,0,0,0.06);
     }
 
-    .stname{
-      flex:1;
+    .state-item b{
       font-weight:950;
       font-size:12px;
-      color:rgba(26,39,48,0.90);
+      color:rgba(26,39,48,0.92);
       min-width:0;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      padding-right:6px;
     }
 
-    .pct{
+    /* Muted pastel pills (less bright) */
+    .state-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      font-weight:950;
+      font-size:11px;
+      padding:5px 9px;
+      border-radius:999px;
+      color:rgba(26,39,48,0.86);
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.72);
+      white-space:nowrap;
       flex:0 0 auto;
-      font-family:var(--mono);
-      font-weight:1000;
-      font-size:12px;
-      color:rgba(26,39,48,0.84);
-      font-variant-numeric:tabular-nums;
     }
+    .state-pill img{
+      width:14px;
+      height:14px;
+      object-fit:contain;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.10));
+    }
+
+    /* Light tint per snack */
+    .pill-wings{ background:rgba(255,198,168,0.50); }
+    .pill-pizza{ background:rgba(255,179,199,0.50); }
+    .pill-chips{ background:rgba(168,230,222,0.55); }
+    .pill-nachos{ background:rgba(255,232,163,0.55); }
+    .pill-cheese{ background:rgba(214,200,255,0.55); }
+    .pill-skins{ background:rgba(201,242,179,0.55); }
 
     /* ===== Footer / Methodology / Embed ===== */
     .method{
@@ -390,14 +332,14 @@
     .embed-btn{
       appearance:none;
       border:1px solid rgba(26,39,48,0.14);
-      background:linear-gradient(90deg, rgba(232,90,106,0.95), rgba(255,143,177,0.95));
+      background:linear-gradient(90deg, rgba(232,90,106,0.92), rgba(255,143,177,0.92));
       color:#fff;
       font-weight:1000;
       letter-spacing:0.02em;
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
-      box-shadow:0 14px 30px rgba(232,90,106,0.18);
+      box-shadow:0 14px 30px rgba(232,90,106,0.16);
     }
     .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
     .embed-panel[hidden]{ display:none; }
@@ -435,7 +377,7 @@
       <div class="flag"><small>EACH STATE’S</small><b>#1 <span class="star">★</span></b></div>
       <div class="headcopy">
         <h1 class="title">America’s Favorite<br/>Super Bowl Snack</h1>
-        <div class="subtitle">Top pick in each state (winner among 6 featured snacks)</div>
+        <div class="subtitle">Top snack in each state (survey results)</div>
       </div>
     </div>
 
@@ -447,24 +389,25 @@
       </div>
 
       <div class="section">
-        <div class="ribbon">Top states for each #1 snack</div>
-        <div class="hint">Only snacks that win at least one state • Top 5 states by %</div>
-        <div class="cols" id="cols"></div>
+        <div class="ribbon">State-by-state results</div>
+        <div class="hint">Each state’s most-chosen snack • A–Z</div>
+        <div class="state-grid" id="stateGrid"></div>
       </div>
 
       <div class="method">
         <div>
-          <strong>Methodology:</strong> We used your state-by-state survey percentages and selected the #1 snack in each state among the
-          <strong>six featured options</strong> (Wings, Pizza, Chips &amp; Dip, Nachos, Cheese Board, Potato Skins).
+          <strong>Methodology:</strong> We selected the most-chosen snack in each state from six featured options
+          (Wings, Pizza, Chips &amp; Dip, Nachos, Cheese Board, Potato Skins). “Other” snacks were not included.
           <br>
-          <strong>Ties:</strong> If two featured snacks tie in a state, we break the tie using the higher national share from the “Total” column.
+          <strong>Ties:</strong> If two snacks tied in a state, we used the national result from the “Total” column to break the tie.
+          <br>
+          <strong>Source:</strong> Survey conducted by RotoGrinders.com (n=3,008 U.S. adults).
         </div>
         <div class="brand" aria-label="Brand">
           <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
         </div>
       </div>
 
-      <!-- Embed block goes BELOW methodology (as requested) -->
       <div class="embed">
         <button class="embed-btn" id="embedToggle" type="button" aria-controls="embedPanel" aria-expanded="false">
           Get embed code
@@ -493,43 +436,21 @@
       cheese: "https://i.postimg.cc/cJSxqVZY/istockphoto-1493302481-612x612.png"
     };
 
-    // Pastel fills per snack (prettier + consistent)
+    // Pastel fills per snack (map)
     const snackColor = {
-      wings:  "#FFC6A8", // peach
-      pizza:  "#FFB3C7", // blush
-      chips:  "#A8E6DE", // mint-teal
-      nachos: "#FFE8A3", // butter
-      cheese: "#D6C8FF", // lavender
-      skins:  "#C9F2B3"  // pistachio
+      wings:  "#FFC6A8",
+      pizza:  "#FFB3C7",
+      chips:  "#A8E6DE",
+      nachos: "#FFE8A3",
+      cheese: "#D6C8FF",
+      skins:  "#C9F2B3"
     };
-
-    const badgeColor = {
-      wings:  "rgba(255,132,90,0.95)",
-      pizza:  "rgba(255,107,151,0.95)",
-      chips:  "rgba(60,189,176,0.95)",
-      nachos: "rgba(248,188,68,0.95)",
-      cheese: "rgba(150,120,255,0.95)",
-      skins:  "rgba(112,200,108,0.95)"
-    };
-
-    // =========================
-    // DATA (from your table, 6 snacks only)
-    // Percent values are numbers (not strings)
-    // =========================
-    const featured = ["wings","pizza","chips","nachos","cheese","skins"];
 
     // "Total" column (national share) for tie-break
-    const totalShare = {
-      wings: 26,
-      pizza: 17,
-      chips: 16,
-      nachos: 8,
-      cheese: 3,
-      skins: 1
-    };
+    const totalShare = { wings:26, pizza:17, chips:16, nachos:8, cheese:3, skins:1 };
+    const featured = ["wings","pizza","chips","nachos","cheese","skins"];
 
     // State-level shares (from your paste)
-    // NOTE: This is the exact set used to compute winners you’re seeing (36/7/7).
     const stateShares = {
       "Alabama":      {wings:35, pizza:20, chips:12, nachos:5,  cheese:0, skins:0},
       "Alaska":       {wings:19, pizza:21, chips:13, nachos:6,  cheese:4, skins:0},
@@ -583,13 +504,28 @@
       "Wyoming":      {wings:20, pizza:13, chips:18, nachos:5,  cheese:4, skins:0}
     };
 
-    // NOTE:
-    // Some states above (Utah, Oregon, Washington) have additional ties in your full paste across all foods.
-    // Here we’re strictly operating within 6 featured snacks, with tie-break = higher Total share.
+    function snackLabel(snack){
+      return ({
+        wings:"Buffalo Wings",
+        pizza:"Pizza",
+        chips:"Chips & Dip",
+        nachos:"Nachos",
+        cheese:"Cheese Board",
+        skins:"Potato Skins"
+      })[snack] || snack;
+    }
 
-    // =========================
-    // Winner pick (with tie-break)
-    // =========================
+    function pillClass(snack){
+      return ({
+        wings:"pill-wings",
+        pizza:"pill-pizza",
+        chips:"pill-chips",
+        nachos:"pill-nachos",
+        cheese:"pill-cheese",
+        skins:"pill-skins"
+      })[snack] || "";
+    }
+
     function pickWinner(stateName){
       const s = stateShares[stateName];
       if(!s) return null;
@@ -602,12 +538,10 @@
         if(v > bestVal){
           bestVal = v; bestSnack = snack;
         } else if(v === bestVal){
-          // tie-break: higher national Total share
           if(totalShare[snack] > totalShare[bestSnack]) bestSnack = snack;
         }
       }
-
-      return { snack: bestSnack, pct: bestVal };
+      return { snack: bestSnack };
     }
 
     // Build per-state winner table
@@ -617,33 +551,13 @@
       if(w) perState[st] = w;
     });
 
-    // Compute winners list for bottom columns
-    function winnersBySnack(){
-      const out = {};
-      for(const st of Object.keys(perState)){
-        const {snack, pct} = perState[st];
-        if(!out[snack]) out[snack] = [];
-        out[snack].push({ state: st, pct });
-      }
-      for(const k of Object.keys(out)){
-        out[k].sort((a,b)=> b.pct - a.pct || a.state.localeCompare(b.state));
-      }
-      return out;
-    }
-
-    const bySnack = winnersBySnack();
-
-    // =========================
-    // Tooltip helpers
-    // =========================
+    // Tooltip
     const tooltip = d3.select("#tt");
-
     function esc(s){
       return String(s).replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[c]));
     }
-
     function placeTooltip(event){
       const rect = tooltip.node().getBoundingClientRect();
       const pad = 10;
@@ -653,18 +567,6 @@
       if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
       tooltip.style("left", x+"px").style("top", y+"px");
     }
-
-    function snackLabel(snack){
-      return ({
-        wings:"Buffalo Wings",
-        pizza:"Pizza",
-        chips:"Chips & Dip",
-        nachos:"Nachos",
-        cheese:"Cheese Board",
-        skins:"Potato Skins"
-      })[snack] || snack;
-    }
-
     function showTip(event, stateName){
       const w = perState[stateName];
       if(!w) return;
@@ -672,69 +574,37 @@
         .style("display","block")
         .html(
           `<strong>${esc(stateName)}</strong>
-           <div class="mono">${esc(snackLabel(w.snack))} — ${w.pct}%</div>
-           <div class="pill" style="background:${badgeColor[w.snack] || 'rgba(26,39,48,0.8)'}">#1 in this state</div>`
+           <div class="pill">${esc(snackLabel(w.snack))}</div>`
         );
       placeTooltip(event);
     }
-
     function hideTip(){ tooltip.style("display","none"); }
 
-    // =========================
-    // Render bottom columns (Top 5 only, snacks with >=1 win)
-    // =========================
-    function renderColumns(){
-      const cols = document.getElementById("cols");
-      const snacks = Object.keys(bySnack)
-        .filter(k => (bySnack[k] || []).length > 0)
-        .sort((a,b)=> (bySnack[b].length - bySnack[a].length) || a.localeCompare(b)); // most wins first
-
-      cols.innerHTML = snacks.map(snack => {
-        const winners = bySnack[snack].slice(0,5);
-        const winCount = bySnack[snack].length;
-
-        // tinted header background
-        const tint = snackColor[snack] ? snackColor[snack] : "rgba(0,0,0,0.03)";
-        const headBg = `linear-gradient(180deg, ${tint}, rgba(255,255,255,0.75))`;
-
+    // Render A–Z grid
+    function renderStateGrid(){
+      const grid = document.getElementById("stateGrid");
+      const statesAZ = Object.keys(perState).slice().sort((a,b)=>a.localeCompare(b));
+      grid.innerHTML = statesAZ.map(st => {
+        const snack = perState[st].snack;
         return `
-          <div class="col">
-            <div class="colhead" style="background:${headBg}">
-              <div class="hleft">
-                <img class="snack-ico" src="${ICONS[snack]}" alt="">
-                <div class="htext">
-                  <div class="snackname">${esc(snackLabel(snack))}</div>
-                  <div class="snacksub">${winCount} state${winCount===1?"":"s"} where it ranks #1</div>
-                </div>
-              </div>
-              <div class="badge" style="background:${badgeColor[snack]}">${winCount} States</div>
-            </div>
-
-            <div class="rows">
-              ${winners.map((r,i)=>`
-                <div class="row">
-                  <div class="rank">${i+1}</div>
-                  <div class="stname">${esc(r.state)}</div>
-                  <div class="pct">${r.pct}%</div>
-                </div>
-              `).join("")}
-            </div>
+          <div class="state-item">
+            <b>${esc(st)}</b>
+            <span class="state-pill ${pillClass(snack)}">
+              <img src="${ICONS[snack]}" alt="" />
+              ${esc(snackLabel(snack))}
+            </span>
           </div>
         `;
       }).join("");
     }
+    renderStateGrid();
 
-    renderColumns();
-
-    // =========================
     // Draw map + icons
-    // =========================
     const svg = d3.select("#map");
     const W = 975, H = 610;
     const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
     const path = d3.geoPath(projection);
 
-    // A few offsets to reduce icon overlap (esp. Northeast)
     const offsets = {
       "Rhode Island":[8, 10],
       "Connecticut":[-6, 8],
@@ -749,7 +619,7 @@
     };
 
     function getIconSize(){
-      return window.innerWidth < 520 ? 36 : 48; // bigger icons (as requested)
+      return window.innerWidth < 520 ? 36 : 48;
     }
 
     let cachedUS = null;
@@ -759,11 +629,9 @@
       if(!cachedUS || !cachedFeatures) return;
 
       const iconSize = getIconSize();
-
       svg.selectAll("*").remove();
       svg.attr("viewBox", `0 0 ${W} ${H}`);
 
-      // States
       svg.append("g")
         .selectAll("path")
         .data(cachedFeatures)
@@ -789,13 +657,11 @@
           event.stopPropagation();
         });
 
-      // Borders
       svg.append("path")
         .datum(topojson.mesh(cachedUS, cachedUS.objects.states, (a,b)=>a!==b))
         .attr("class","state-outline")
         .attr("d", path);
 
-      // Icons
       const gIcons = svg.append("g").attr("class","icons-layer");
 
       const points = cachedFeatures.map(f => {
@@ -830,16 +696,13 @@
       renderMap();
     });
 
-    // re-render on resize for responsive icon sizes
     let t = null;
     window.addEventListener("resize", () => {
       clearTimeout(t);
       t = setTimeout(() => renderMap(), 120);
     });
 
-    // =========================
     // Embed logic
-    // =========================
     const embedToggle = document.getElementById("embedToggle");
     const embedPanel  = document.getElementById("embedPanel");
     const embedCode   = document.getElementById("embedCode");
@@ -871,3 +734,4 @@
   </script>
 </body>
 </html>
+
