@@ -11,14 +11,13 @@
 
   <style>
     :root{
-      /* Pastel "game day" background */
       --bgTop:#e9fbf6;
       --bgBottom:#fff6f2;
 
       --ink:#1a2730;
       --muted:rgba(26,39,48,0.70);
 
-      --accent:#5677ff;     /* blue ribbon */
+      --accent:#5677ff;
       --accentDeep:#3f5fe6;
 
       --card:rgba(255,255,255,0.70);
@@ -122,7 +121,6 @@
       overflow:hidden;
     }
 
-    /* subtle diagonal highlight band */
     .map-frame:after{
       content:"";
       position:absolute;
@@ -147,9 +145,7 @@
       stroke-linejoin:round;
       stroke-linecap:round;
     }
-    .state:hover{
-      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
-    }
+    .state:hover{ filter: drop-shadow(0 0 10px rgba(0,0,0,0.10)); }
 
     .state-outline{
       fill:none;
@@ -158,7 +154,6 @@
       pointer-events:none;
     }
 
-    /* Icon layer */
     .icons-layer image{
       filter: drop-shadow(0 10px 14px rgba(0,0,0,0.16));
       opacity:0.98;
@@ -196,7 +191,7 @@
       white-space:nowrap;
     }
 
-    /* ===== Bottom section ===== */
+    /* ===== State list section ===== */
     .section{
       padding:12px 16px 14px;
       border-top:1px solid rgba(26,39,48,0.10);
@@ -205,7 +200,7 @@
 
     .ribbon{
       margin:6px auto 10px;
-      max-width:620px;
+      max-width:720px;
       text-align:center;
       background:linear-gradient(90deg, var(--accentDeep), var(--accent));
       color:#fff;
@@ -227,113 +222,67 @@
       text-transform:uppercase;
     }
 
-    .cols{
+    .state-grid{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:10px;
     }
+    @media (max-width:980px){ .state-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+    @media (max-width:720px){ .state-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+    @media (max-width:460px){ .state-grid{ grid-template-columns:1fr; } }
 
-    @media (max-width:880px){
-      .cols{ grid-template-columns:1fr; }
-    }
-
-    .col{
+    .state-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 10px;
+      border-radius:14px;
       background:rgba(255,255,255,0.66);
       border:1px solid rgba(26,39,48,0.10);
-      border-radius:14px;
-      overflow:hidden;
-    }
-
-    .colhead{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 10px 8px;
-      border-bottom:1px solid rgba(26,39,48,0.08);
-    }
-
-    .hleft{
-      display:flex;
-      align-items:center;
-      gap:10px;
+      box-shadow:0 10px 24px rgba(0,0,0,0.06);
       min-width:0;
     }
 
-    .dip-ico{
-      width:22px; height:22px;
-      object-fit:contain;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
-      flex:0 0 auto;
-    }
-
-    .htext{ min-width:0; }
-    .dipname{
-      font-weight:1000;
-      font-size:13px;
-      color:rgba(26,39,48,0.92);
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:210px;
-    }
-    .dipsub{
-      margin-top:3px;
-      font-weight:850;
-      font-size:11px;
-      color:rgba(26,39,48,0.62);
-      line-height:1.1;
-    }
-
-    .badge{
-      flex:0 0 auto;
-      font-size:11px;
-      font-weight:1000;
-      padding:6px 10px;
-      border-radius:999px;
-      color:#fff;
-      white-space:nowrap;
-    }
-
-    .rows{ padding:10px; }
-
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:8px 8px;
-      border-radius:12px;
-      background:rgba(255,255,255,0.66);
-      border:1px solid rgba(26,39,48,0.06);
-      margin-bottom:8px;
-    }
-    .row:last-child{ margin-bottom:0; }
-
-    .rank{
-      width:22px;
-      height:22px;
-      border-radius:8px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      font-size:11px;
-      color:rgba(26,39,48,0.82);
-      background:rgba(26,39,48,0.06);
-      flex:0 0 auto;
-    }
-
-    .stname{
-      flex:1;
+    .state-name{
       font-weight:950;
       font-size:12px;
-      color:rgba(26,39,48,0.90);
+      color:rgba(26,39,48,0.92);
       min-width:0;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+    }
+
+    /* Softer “chip” (no cut-off) */
+    .pick{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:950;
+      font-size:11px;
+      line-height:1.05;
+      color:rgba(26,39,48,0.86);
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(26,39,48,0.04);
+      flex:0 0 auto;
+      max-width:60%;
+      justify-content:flex-end;
+      text-align:right;
+    }
+    .pick .ptext{
+      white-space:normal;          /* allow wrapping */
+      overflow:visible;            /* no clipping */
+      text-overflow:clip;
+    }
+    .pick img{
+      width:14px;
+      height:14px;
+      object-fit:contain;
+      flex:0 0 auto;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.12));
     }
 
     /* ===== Footer / Methodology / Embed ===== */
@@ -430,22 +379,22 @@
       </div>
 
       <div class="section">
-        <div class="ribbon">Top picks at a glance</div>
-        <div class="hint">Most common #1 dips • Top 5 states where each dip wins</div>
-        <div class="cols" id="cols"></div>
+        <div class="ribbon">State-by-state results</div>
+        <div class="hint">Each state’s most-chosen dip (A–Z)</div>
+        <div class="state-grid" id="stateGrid"></div>
       </div>
 
       <div class="method">
         <div>
-          <strong>Methodology:</strong> We selected the most-chosen dip in each state (Q4).
-          “Other” and “I do not eat any dips” were excluded. Ties were broken using the national result from the “Total” column.
+          <strong>Methodology:</strong> We selected the most-chosen dip in each state (Q4). “Other” and “I do not eat any dips” were excluded.
+          Ties were broken using the national result from the “Total” column.
+          <br><strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n = 3,080 U.S. adults).
         </div>
         <div class="brand" aria-label="Brand">
           <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
         </div>
       </div>
 
-      <!-- Embed block -->
       <div class="embed">
         <button class="embed-btn" id="embedToggle" type="button" aria-controls="embedPanel" aria-expanded="false">
           Get embed code
@@ -479,19 +428,19 @@
       spinach: "https://i.postimg.cc/bN9n44Zg/spinach_dip.png"
     };
 
-    // Pastel fills per dip (pretty + distinct)
+    // Pastel fills per dip (map fills)
     const dipColor = {
-      buffalo: "#FFC6A8", // peach
-      french:  "#FFE2A8", // butter
-      queso:   "#FFD68A", // warm gold
-      guac:    "#CFF3B7", // soft green
-      salsa:   "#FFB3C7", // blush
-      ranch:   "#CFE8FF", // baby blue
-      seven:   "#D6C8FF", // lavender
-      spinach: "#BFE8E0", // mint
-      rotel:   "#FFCCB6", // apricot
-      crab:    "#F2D6FF", // lilac-pink
-      hummus:  "#E7D9C8"  // sand
+      buffalo: "#FFC6A8",
+      french:  "#FFE2A8",
+      queso:   "#FFD68A",
+      guac:    "#CFF3B7",
+      salsa:   "#FFB3C7",
+      ranch:   "#CFE8FF",
+      seven:   "#D6C8FF",
+      spinach: "#BFE8E0",
+      rotel:   "#FFCCB6",
+      crab:    "#F2D6FF",
+      hummus:  "#E7D9C8"
     };
 
     const badgeColor = {
@@ -508,7 +457,6 @@
       hummus:  "rgba(160,120,80,0.95)"
     };
 
-    // Dips included in winner selection (exclude Other + I do not eat)
     const featuredDips = ["buffalo","french","queso","guac","salsa","ranch","seven","spinach","rotel","crab","hummus"];
 
     // National Total shares (tie-break)
@@ -526,20 +474,7 @@
       hummus:  2
     };
 
-    // =========================
-    // Q4 State data (winner computed per state)
-    // NOTE: If you already pasted a full stateShares object earlier,
-    // keep it and ensure keys match the dip ids above.
-    // =========================
-    // For your current working version: keep your existing full stateShares object
-    // (buffalo/french/queso/guac/salsa/ranch/seven/spinach/rotel/crab/hummus)
-    // and DO NOT include "Other" / "I do not eat any dips" in the winner loop.
-
-    // 👉 IMPORTANT:
-    // Paste your full Q4 stateShares object here (same structure as your snack map).
-    // It should look like:
-    // const stateShares = { "Alabama": {buffalo:22, french:10, queso:13, ...}, ... };
-
+    // State shares
     const stateShares = {
       "Alabama":      {buffalo:22,french:10,queso:13,guac:7,salsa:10,ranch:15,seven:2,spinach:2,rotel:10,crab:3,hummus:0},
       "Alaska":       {buffalo:8,french:8,queso:12,guac:10,salsa:17,ranch:10,seven:13,spinach:2,rotel:4,crab:2,hummus:0},
@@ -593,9 +528,28 @@
       "Wyoming":      {buffalo:16,french:13,queso:16,guac:9,salsa:7,ranch:13,seven:15,spinach:0,rotel:2,crab:4,hummus:0}
     };
 
-    // =========================
-    // Winner pick (tie-break by national Total share)
-    // =========================
+    function dipLabel(dip){
+  return ({
+    buffalo:"Buffalo chicken",
+    french:"French onion",
+    queso:"Queso",
+    guac:"Guacamole",
+    salsa:"Salsa",
+    ranch:"Ranch",
+    seven:"Seven layer",
+    spinach:"Spinach",
+    rotel:"Rotel",
+    crab:"Crab",
+    hummus:"Hummus"
+  })[dip] || dip;
+}
+
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
     function pickWinner(stateName){
       const s = stateShares[stateName];
       if(!s) return null;
@@ -614,50 +568,51 @@
       return { dip: bestDip };
     }
 
+    // Build per-state winner table
     const perState = {};
     Object.keys(stateShares).forEach(st => {
       const w = pickWinner(st);
       if(w) perState[st] = w;
     });
 
-    function winnersByDip(){
-      const out = {};
-      for(const st of Object.keys(perState)){
-        const {dip} = perState[st];
-        if(!out[dip]) out[dip] = [];
-        out[dip].push(st);
-      }
-      return out;
+    // Softer chip backgrounds (avoid “too bright”)
+    function hexToRgb(hex){
+      const h = String(hex || "").replace("#","");
+      if(h.length !== 6) return null;
+      const n = parseInt(h, 16);
+      return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+    }
+    function rgbaFromHex(hex, a){
+      const rgb = hexToRgb(hex);
+      if(!rgb) return `rgba(26,39,48,${a})`;
+      return `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
     }
 
-    const byDip = winnersByDip();
-
-    function dipLabel(dip){
-      return ({
-        buffalo:"Buffalo chicken dip",
-        french:"French onion dip",
-        queso:"Queso",
-        guac:"Guacamole",
-        salsa:"Salsa",
-        ranch:"Ranch dip",
-        seven:"Seven layer dip",
-        spinach:"Spinach dip",
-        rotel:"Rotel dip",
-        crab:"Crab dip",
-        hummus:"Hummus"
-      })[dip] || dip;
+    // Render state grid (A–Z) — with wrapping so “Buffalo chicken dip” never clips
+    function renderStateGrid(){
+      const el = document.getElementById("stateGrid");
+      const states = Object.keys(perState).sort((a,b)=>a.localeCompare(b));
+      el.innerHTML = states.map(st => {
+        const dip = perState[st].dip;
+        const bg = rgbaFromHex(dipColor[dip], 0.28);
+        const bd = rgbaFromHex(dipColor[dip], 0.22);
+        return `
+          <div class="state-item">
+            <div class="state-name" title="${esc(st)}">${esc(st)}</div>
+            <div class="pick" style="background:${bg};border-color:${bd}">
+              <img src="${ICONS[dip] || ""}" alt="">
+              <span class="ptext">${esc(dipLabel(dip))}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
+    renderStateGrid();
 
     // =========================
     // Tooltip
     // =========================
     const tooltip = d3.select("#tt");
-
-    function esc(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[c]));
-    }
 
     function placeTooltip(event){
       const rect = tooltip.node().getBoundingClientRect();
@@ -683,51 +638,6 @@
     }
 
     function hideTip(){ tooltip.style("display","none"); }
-
-    // =========================
-    // Bottom columns (Top 3 dips by # of wins; Top 5 states each)
-    // =========================
-    function renderColumns(){
-      const cols = document.getElementById("cols");
-
-      const sorted = Object.keys(byDip)
-        .sort((a,b)=> (byDip[b].length - byDip[a].length) || a.localeCompare(b))
-        .slice(0,3);
-
-      cols.innerHTML = sorted.map(dip => {
-        const winCount = byDip[dip].length;
-        const topStates = byDip[dip].slice(0,5); // no %; just a clean list
-
-        const tint = dipColor[dip] || "rgba(0,0,0,0.03)";
-        const headBg = `linear-gradient(180deg, ${tint}, rgba(255,255,255,0.75))`;
-
-        return `
-          <div class="col">
-            <div class="colhead" style="background:${headBg}">
-              <div class="hleft">
-                <img class="dip-ico" src="${ICONS[dip]}" alt="">
-                <div class="htext">
-                  <div class="dipname">${esc(dipLabel(dip))}</div>
-                  <div class="dipsub">#1 in ${winCount} state${winCount===1?"":"s"}</div>
-                </div>
-              </div>
-              <div class="badge" style="background:${badgeColor[dip] || 'rgba(26,39,48,0.8)'}">${winCount} States</div>
-            </div>
-
-            <div class="rows">
-              ${topStates.map((st,i)=>`
-                <div class="row">
-                  <div class="rank">${i+1}</div>
-                  <div class="stname">${esc(st)}</div>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    renderColumns();
 
     // =========================
     // Draw map + icons
