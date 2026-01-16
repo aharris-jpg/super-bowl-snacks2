@@ -15,16 +15,17 @@
       --bgBottom:#fff6f2;
 
       --ink:#1a2730;
-      --muted:rgba(26,39,48,0.70);
+      --muted:rgba(26,39,48,0.74);
 
+      /* keep accent subtle (NOT used for title anymore) */
       --accent:#e85a6a;
-      --accentDeep:#d64a5b;
 
-      --card:rgba(255,255,255,0.70);
+      --card:rgba(255,255,255,0.72);
       --border:rgba(26,39,48,0.10);
       --shadow:0 18px 46px rgba(0,0,0,0.12);
 
       --radius:18px;
+
       --mapStroke:#ffffff;
       --mapStrokeW:6.2;
 
@@ -41,18 +42,18 @@
       min-height:100vh;
       padding:22px 14px 26px;
       background:
-        radial-gradient(1000px 620px at 75% 18%, rgba(255,179,199,0.32), transparent 55%),
-        radial-gradient(900px 640px at 20% 18%, rgba(168,230,222,0.30), transparent 56%),
-        radial-gradient(900px 650px at 55% 88%, rgba(255,198,168,0.30), transparent 58%),
+        radial-gradient(1000px 620px at 75% 18%, rgba(255,179,199,0.30), transparent 55%),
+        radial-gradient(900px 640px at 20% 18%, rgba(168,230,222,0.28), transparent 56%),
+        radial-gradient(900px 650px at 55% 88%, rgba(255,198,168,0.28), transparent 58%),
         linear-gradient(180deg, var(--bgTop), var(--bgBottom));
       overflow-x:hidden;
     }
 
     .wrap{ max-width:1040px; margin:0 auto; }
 
-    /* ===== Header (Option A: single line that fits) ===== */
+    /* ===== Header ===== */
     .hero{
-      padding:10px 0 12px;
+      padding:8px 0 12px;
       margin-bottom:12px;
     }
 
@@ -63,32 +64,26 @@
       padding:8px 12px;
       border-radius:999px;
       border:1px solid rgba(26,39,48,0.12);
-      background:rgba(255,255,255,0.55);
+      background:rgba(255,255,255,0.58);
       box-shadow:0 10px 24px rgba(0,0,0,0.06);
       font-weight:950;
       text-transform:uppercase;
       letter-spacing:0.05em;
       font-size:11px;
-      color:rgba(26,39,48,0.80);
+      color:rgba(26,39,48,0.78);
       margin-bottom:10px;
     }
 
+    /* single-color, editorial title */
     .title{
       margin:0;
       font-weight:1000;
-      text-transform:uppercase;
-      letter-spacing:0.01em;
+      letter-spacing:-0.012em;
       line-height:0.98;
-      font-size:clamp(24px, 3.2vw, 44px);
-      color:var(--accent);
-      text-shadow: 0 10px 30px rgba(0,0,0,0.10);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:clip;
-    }
-
-    @media (max-width:520px){
-      .title{ white-space:normal; }
+      color:rgba(26,39,48,0.94);
+      text-shadow:0 8px 22px rgba(0,0,0,0.08);
+      font-size:clamp(30px, 4.6vw, 56px);
+      max-width:24ch; /* intentional 2-line wrap on desktop */
     }
 
     .subtitle{
@@ -96,7 +91,7 @@
       color:var(--muted);
       font-weight:850;
       font-size:clamp(13px, 1.8vw, 16px);
-      max-width:72ch;
+      max-width:74ch;
     }
 
     /* ===== Card ===== */
@@ -119,18 +114,24 @@
       overflow:hidden;
     }
 
-    /* ===== Watermark snacks layer (set dynamically via JS) ===== */
+    /* Watermark layer (set dynamically to used snacks only) */
     .map-frame:before{
       content:"";
       position:absolute;
       inset:0;
       pointer-events:none;
       z-index:0;
-      opacity:0.12;
+      opacity:0.07;
       background-repeat:no-repeat;
-      filter: blur(0.2px);
+      background-size: 260px auto, 250px auto, 250px auto;
+      background-position:
+        -70px -70px,
+        calc(100% + 80px) -90px,
+        calc(100% + 60px) calc(100% + 70px);
+      filter:saturate(0.9);
     }
 
+    /* soft diagonal highlight */
     .map-frame:after{
       content:"";
       position:absolute;
@@ -145,16 +146,10 @@
           rgba(255,255,255,0.0) 100%);
       pointer-events:none;
       opacity:0.55;
-      z-index:1;
+      z-index:0;
     }
 
-    svg{
-      width:100%;
-      height:auto;
-      display:block;
-      position:relative;
-      z-index:2;
-    }
+    svg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
 
     .state{
       stroke:var(--mapStroke);
@@ -162,9 +157,7 @@
       stroke-linejoin:round;
       stroke-linecap:round;
     }
-    .state:hover{
-      filter: drop-shadow(0 0 10px rgba(0,0,0,0.10));
-    }
+    .state:hover{ filter: drop-shadow(0 0 10px rgba(0,0,0,0.10)); }
 
     .state-outline{
       fill:none;
@@ -174,8 +167,8 @@
     }
 
     .icons-layer image{
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.16));
-      opacity:0.98;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.14));
+      opacity:0.90;
     }
 
     /* Tooltip */
@@ -188,8 +181,8 @@
       border:1px solid rgba(26,39,48,0.14);
       border-radius:14px;
       padding:10px 12px;
-      box-shadow:0 18px 44px rgba(0,0,0,0.16));
-      max-width:260px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.16);
+      max-width:280px;
       backdrop-filter: blur(10px);
     }
     .tooltip strong{
@@ -197,6 +190,10 @@
       font-weight:950;
       margin-bottom:4px;
       color:rgba(26,39,48,0.92);
+    }
+    .tooltip .line{
+      font-weight:900;
+      color:rgba(26,39,48,0.88);
     }
     .tooltip .pill{
       display:inline-block;
@@ -207,12 +204,12 @@
       border-radius:999px;
       color:rgba(26,39,48,0.86);
       border:1px solid rgba(26,39,48,0.10);
-      background:rgba(255,255,255,0.70);
+      background:rgba(255,255,255,0.72);
       letter-spacing:0.02em;
       white-space:nowrap;
     }
 
-    /* ===== Legend (key) ===== */
+    /* ===== Legend (only used snacks) ===== */
     .legend{
       display:grid;
       grid-template-columns:repeat(3, minmax(0,1fr));
@@ -220,18 +217,17 @@
       margin:12px 0 6px;
     }
     @media (max-width:820px){
-      .legend{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .legend{ grid-template-columns:repeat(1, minmax(0,1fr)); }
     }
-
     .leg-item{
       display:flex;
       align-items:center;
       gap:10px;
       padding:10px 10px;
       border-radius:14px;
-      background:rgba(255,255,255,0.62);
       border:1px solid rgba(26,39,48,0.08);
       min-width:0;
+      background:rgba(255,255,255,0.62);
     }
     .leg-icon{
       width:18px;
@@ -252,7 +248,7 @@
     /* ===== Footer / Methodology / Embed ===== */
     .method{
       padding:10px 16px 12px;
-      font-size:11px;
+      font-size:11.5px;
       line-height:1.35;
       color:rgba(26,39,48,0.66);
       border-top:1px solid rgba(26,39,48,0.08);
@@ -286,14 +282,14 @@
     .embed-btn{
       appearance:none;
       border:1px solid rgba(26,39,48,0.14);
-      background:linear-gradient(90deg, rgba(232,90,106,0.92), rgba(255,143,177,0.92));
+      background:linear-gradient(90deg, rgba(26,39,48,0.92), rgba(26,39,48,0.78));
       color:#fff;
       font-weight:1000;
       letter-spacing:0.02em;
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
-      box-shadow:0 14px 30px rgba(232,90,106,0.16);
+      box-shadow:0 14px 30px rgba(26,39,48,0.14);
     }
     .embed-btn:hover{ filter:brightness(1.02); transform: translateY(-1px); }
     .embed-panel[hidden]{ display:none; }
@@ -328,9 +324,9 @@
 <body>
   <div class="wrap">
     <div class="hero">
-      <div class="kicker">Super Bowl • Snacks • State results</div>
-      <h1 class="title">America’s Favorite Super Bowl Snack</h1>
-      <div class="subtitle">Top snack in each state (survey results)</div>
+      <div class="kicker">Super Bowl • snacks by state</div>
+      <h1 class="title">America’s Favorite Super Bowl Snack — by State</h1>
+      <div class="subtitle">Top snack in each state (survey results).</div>
     </div>
 
     <div class="card">
@@ -339,7 +335,7 @@
           <svg id="map" viewBox="0 0 975 610" role="img" aria-label="America’s Favorite Super Bowl Snack map"></svg>
         </div>
 
-        <!-- KEY / LEGEND -->
+        <!-- Key (only shows the snacks that actually win at least one state) -->
         <div class="legend" id="legend"></div>
       </div>
 
@@ -350,7 +346,7 @@
           <br>
           <strong>Ties:</strong> If two snacks tied in a state, we used the national result from the “Total” column to break the tie.
           <br>
-          <strong>Source:</strong> Survey conducted by RotoGrinders.com (n=3,008 U.S. adults).
+          <strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n=3,008 U.S. adults).
         </div>
         <div class="brand" aria-label="Brand">
           <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
@@ -374,7 +370,7 @@
 
   <script>
     // =========================
-    // ICON URLS (provided)
+    // ICON URLS
     // =========================
     const ICONS = {
       wings:  "https://i.postimg.cc/j51426MB/pngtree-fried-chicken-wing-png-image-7885164.png",
@@ -399,7 +395,7 @@
     const totalShare = { wings:26, pizza:17, chips:16, nachos:8, cheese:3, skins:1 };
     const featured = ["wings","pizza","chips","nachos","cheese","skins"];
 
-    // State-level shares (from your paste)
+    // State-level shares (as provided)
     const stateShares = {
       "Alabama":      {wings:35, pizza:20, chips:12, nachos:5,  cheese:0, skins:0},
       "Alaska":       {wings:19, pizza:21, chips:13, nachos:6,  cheese:4, skins:0},
@@ -470,9 +466,6 @@
       }[c]));
     }
 
-    // =========================
-    // Winner per state
-    // =========================
     function pickWinner(stateName){
       const s = stateShares[stateName];
       if(!s) return null;
@@ -491,27 +484,41 @@
       return { snack: bestSnack, pct: bestVal };
     }
 
+    // Build per-state winners
     const perState = {};
     Object.keys(stateShares).forEach(st => {
       const w = pickWinner(st);
       if(w) perState[st] = w;
     });
 
-    // Which snacks actually appear as #1 in any state?
-    const usedSnacks = Array.from(new Set(Object.values(perState).map(x => x.snack)));
+    // Used snacks (for key + watermarks)
+    function usedSnackOrder(){
+      const counts = {};
+      Object.values(perState).forEach(v => { counts[v.snack] = (counts[v.snack] || 0) + 1; });
+      return Object.keys(counts).sort((a,b)=>{
+        const d = (counts[b]-counts[a]);
+        if(d !== 0) return d;
+        return snackLabel(a).localeCompare(snackLabel(b));
+      });
+    }
+    const USED = usedSnackOrder(); // likely wings, pizza, chips
 
-    // =========================
-    // Legend (ONLY used snacks)
-    // =========================
+    // Inject watermark background images into :before (ONLY used snacks)
+    (function setWatermarks(){
+      const frame = document.getElementById("mapFrame");
+      const imgs = USED.slice(0,3).map(k => `url("${ICONS[k]}")`);
+      while(imgs.length < 3) imgs.push(imgs[imgs.length-1] || "none");
+
+      const style = document.createElement("style");
+      style.textContent = `#mapFrame.map-frame:before{background-image:${imgs.join(", ")};}`;
+      document.head.appendChild(style);
+    })();
+
+    // Render legend (ONLY used)
     function renderLegend(){
       const legend = document.getElementById("legend");
-
-      // Nice stable order preference
-      const preferredOrder = ["wings","pizza","chips"];
-      const order = preferredOrder.filter(x => usedSnacks.includes(x));
-
-      legend.innerHTML = order.map(snack => `
-        <div class="leg-item">
+      legend.innerHTML = USED.map(snack => `
+        <div class="leg-item" style="background:${(snackColor[snack] || "#fff")}66">
           <img class="leg-icon" src="${ICONS[snack]}" alt="">
           <div class="leg-label">${esc(snackLabel(snack))}</div>
         </div>
@@ -519,65 +526,8 @@
     }
     renderLegend();
 
-    // =========================
-    // Watermarks (ONLY used snacks)
-    // =========================
-    function renderWatermarks(){
-      const frame = document.getElementById("mapFrame");
-      if(!frame) return;
-
-      // Map the 3 used snacks to big watermark placements
-      const order = ["pizza","wings","chips"].filter(x => usedSnacks.includes(x));
-
-      // Fallback if something unexpected happens
-      const wm = order.length ? order : usedSnacks.slice(0,3);
-
-      // Build CSS background lists dynamically (max 3)
-      const imgs = wm.map(s => `url("${ICONS[s]}")`).join(", ");
-      const sizes = wm.map(() => `220px auto`).join(", ");
-
-      // positions tuned for 3 items
-      const positions = [];
-      if (wm.includes("pizza")) positions.push(`-40px -30px`);
-      if (wm.includes("wings")) positions.push(`calc(100% + 35px) -25px`);
-      if (wm.includes("chips")) positions.push(`50% calc(100% + 30px)`);
-
-      // If order differs, just place them in a safe pattern
-      while (positions.length < wm.length) {
-        positions.push(`50% 50%`);
-      }
-
-      frame.style.setProperty("--wm-images", imgs);
-
-      // write directly onto ::before via style attribute using CSS variables:
-      frame.style.setProperty("--wm-bg", imgs);
-      frame.style.setProperty("--wm-sz", sizes);
-      frame.style.setProperty("--wm-pos", positions.slice(0, wm.length).join(", "));
-
-      // Apply onto ::before using inline stylesheet hook
-      // (we target the element by setting its style properties, used by a small injected rule)
-      const id = "wmRule";
-      let rule = document.getElementById(id);
-      if(!rule){
-        rule = document.createElement("style");
-        rule.id = id;
-        document.head.appendChild(rule);
-      }
-      rule.textContent = `
-        #mapFrame:before{
-          background-image: var(--wm-bg);
-          background-size: var(--wm-sz);
-          background-position: var(--wm-pos);
-        }
-      `;
-    }
-    renderWatermarks();
-
-    // =========================
     // Tooltip
-    // =========================
     const tooltip = d3.select("#tt");
-
     function placeTooltip(event){
       const rect = tooltip.node().getBoundingClientRect();
       const pad = 10;
@@ -587,7 +537,6 @@
       if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
       tooltip.style("left", x+"px").style("top", y+"px");
     }
-
     function showTip(event, stateName){
       const w = perState[stateName];
       if(!w) return;
@@ -595,17 +544,14 @@
         .style("display","block")
         .html(
           `<strong>${esc(stateName)}</strong>
-           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(snackLabel(w.snack))}</div>
+           <div class="line">${esc(snackLabel(w.snack))} <span style="opacity:.72">(${w.pct}%)</span></div>
            <div class="pill">Top snack in this state</div>`
         );
       placeTooltip(event);
     }
-
     function hideTip(){ tooltip.style("display","none"); }
 
-    // =========================
     // Draw map + icons
-    // =========================
     const svg = d3.select("#map");
     svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
@@ -626,7 +572,7 @@
     };
 
     function getIconSize(){
-      return window.innerWidth < 520 ? 36 : 48;
+      return window.innerWidth < 520 ? 32 : 42;
     }
 
     let cachedUS = null;
@@ -675,8 +621,10 @@
         const name = f.properties && f.properties.name;
         const w = perState[name];
         if(!w) return null;
+
         const c = path.centroid(f);
         if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
+
         const [dx,dy] = offsets[name] || [0,0];
         return { name, x:c[0]+dx, y:c[1]+dy, snack:w.snack };
       }).filter(Boolean);
@@ -711,9 +659,7 @@
       t = setTimeout(() => renderMap(), 120);
     });
 
-    // =========================
     // Embed logic
-    // =========================
     const embedToggle = document.getElementById("embedToggle");
     const embedPanel  = document.getElementById("embedPanel");
     const embedCode   = document.getElementById("embedCode");
