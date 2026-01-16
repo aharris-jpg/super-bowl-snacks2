@@ -52,57 +52,49 @@
 
     /* ===== Header ===== */
     .hero{
-      position:relative;
-      padding:10px 0 10px;
+      padding:10px 0 12px;
       margin-bottom:12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
     }
-
-    .flag{
-      flex:0 0 auto;
-      background:linear-gradient(180deg, var(--accent), var(--accentDeep));
-      color:#fff;
-      padding:12px 14px 12px 16px;
-      border-radius:12px;
-      box-shadow:0 14px 34px rgba(86,119,255,0.22);
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(26,39,48,0.12);
+      background:rgba(255,255,255,0.55);
+      box-shadow:0 10px 24px rgba(0,0,0,0.06);
       font-weight:950;
-      letter-spacing:0.04em;
       text-transform:uppercase;
-      line-height:1.05;
-      min-width:128px;
+      letter-spacing:0.05em;
+      font-size:11px;
+      color:rgba(26,39,48,0.78);
+      margin-bottom:10px;
     }
-    .flag .star{ margin-left:6px; }
-    .flag small{ display:block; font-size:12px; opacity:0.95; }
-    .flag b{ display:block; font-size:14px; }
-
-    .headcopy{ flex:1; min-width:0; }
     .title{
       margin:0;
       font-weight:1000;
       text-transform:uppercase;
       letter-spacing:0.02em;
-      line-height:0.95;
+      line-height:0.96;
       font-size:clamp(28px, 4.6vw, 52px);
       color:var(--accent);
       text-shadow: 0 10px 30px rgba(0,0,0,0.10);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .subtitle{
       margin:10px 0 0;
       color:var(--muted);
       font-weight:800;
       font-size:clamp(13px, 1.8vw, 16px);
-    }
-
-    @media (max-width:720px){
-      .hero{ flex-direction:column; align-items:flex-start; }
-      .flag{ min-width:auto; }
+      max-width:72ch;
     }
 
     /* ===== Card ===== */
     .card{
+      position:relative;
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
@@ -111,7 +103,48 @@
       backdrop-filter: blur(10px);
     }
 
-    .map-area{ padding:16px 16px 12px; }
+    /* ========= Watermark dip frame (MORE visible, pushed to edges) ========= */
+    .watermarks{
+      position:absolute;
+      inset:-26px;              /* push outside so it lives in “border” */
+      pointer-events:none;
+      z-index:0;
+      overflow:hidden;
+    }
+
+    .watermarks img{
+      position:absolute;
+      opacity:0.16;             /* darker than before */
+      filter: saturate(1.1) contrast(1.1) drop-shadow(0 18px 30px rgba(0,0,0,0.08));
+      transform-origin:center;
+    }
+
+    /* Place watermarks around edges */
+    .wm-tl{ top:-36px; left:-44px; width:260px; transform: rotate(-14deg); }
+    .wm-tr{ top:-44px; right:-52px; width:290px; transform: rotate(14deg); }
+    .wm-bl{ bottom:-56px; left:-64px; width:330px; transform: rotate(10deg); }
+    .wm-br{ bottom:-52px; right:-58px; width:290px; transform: rotate(-12deg); }
+
+    /* Add 2 more side accents to make it feel “framed” */
+    .wm-lm{ top:38%; left:-110px; width:340px; transform: rotate(88deg); opacity:0.11; }
+    .wm-rm{ top:42%; right:-120px; width:360px; transform: rotate(-92deg); opacity:0.11; }
+
+    @media (max-width:720px){
+      .watermarks{ inset:-18px; }
+      .wm-tl{ width:210px; }
+      .wm-tr{ width:220px; }
+      .wm-bl{ width:250px; }
+      .wm-br{ width:220px; }
+      .wm-lm, .wm-rm{ display:none; } /* avoid clutter on mobile */
+      .title{ white-space:normal; }   /* allow wrap on small screens */
+    }
+
+    /* ===== Map area ===== */
+    .map-area{
+      position:relative;
+      z-index:1;
+      padding:16px 16px 12px;
+    }
 
     .map-frame{
       position:relative;
@@ -119,6 +152,16 @@
       border:1px solid rgba(26,39,48,0.10);
       background:rgba(255,255,255,0.55);
       overflow:hidden;
+    }
+
+    /* Light “wash” over the map area so watermarks don’t fight */
+    .map-frame:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: rgba(255,255,255,0.22);
+      pointer-events:none;
+      z-index:0;
     }
 
     .map-frame:after{
@@ -135,6 +178,7 @@
           rgba(255,255,255,0.0) 100%);
       pointer-events:none;
       opacity:0.55;
+      z-index:0;
     }
 
     svg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
@@ -191,7 +235,7 @@
       white-space:nowrap;
     }
 
-    /* ===== Legend (like the hospitality map) ===== */
+    /* ===== Legend ===== */
     .legend{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
@@ -229,6 +273,8 @@
 
     /* ===== Footer / Methodology / Embed ===== */
     .method{
+      position:relative;
+      z-index:1;
       padding:10px 16px 12px;
       font-size:11px;
       line-height:1.35;
@@ -257,6 +303,8 @@
     }
 
     .embed{
+      position:relative;
+      z-index:1;
       padding:12px 16px 16px;
       background:rgba(255,255,255,0.55);
       border-top:1px solid rgba(26,39,48,0.08);
@@ -306,20 +354,27 @@
 <body>
   <div class="wrap">
     <div class="hero">
-      <div class="flag"><small>EACH STATE’S</small><b>#1 <span class="star">★</span></b></div>
-      <div class="headcopy">
-        <h1 class="title">America’s Favorite<br/>Super Bowl Dip</h1>
-        <div class="subtitle">Top dip in each state (survey results)</div>
-      </div>
+      <div class="kicker">Super Bowl • Dips by state</div>
+      <h1 class="title">America’s Favorite Super Bowl Dip — by State</h1>
+      <div class="subtitle">The most-chosen dip in each state (survey results).</div>
     </div>
 
     <div class="card">
+      <!-- Watermark frame -->
+      <div class="watermarks" aria-hidden="true">
+        <img class="wm-tl" src="https://i.postimg.cc/CxM80J8c/buffalo_chicken_dip_removebg_preview.png" alt="">
+        <img class="wm-tr" src="https://i.postimg.cc/W1pZVSZn/gaucamole.png" alt="">
+        <img class="wm-bl" src="https://i.postimg.cc/t4R6bD6k/queso_dip_removebg_preview.png" alt="">
+        <img class="wm-br" src="https://i.postimg.cc/DyPGRRSH/salsa.png" alt="">
+        <img class="wm-lm" src="https://i.postimg.cc/QxJ7vvFy/ranch_dip.png" alt="">
+        <img class="wm-rm" src="https://i.postimg.cc/Z5YNmjNj/french_onion_dip_removebg_preview.png" alt="">
+      </div>
+
       <div class="map-area">
         <div class="map-frame">
           <svg id="map" viewBox="0 0 975 610" role="img" aria-label="America’s Favorite Super Bowl Dip map"></svg>
         </div>
 
-        <!-- Legend row (replaces the big bottom section) -->
         <div class="legend" id="legend"></div>
       </div>
 
@@ -350,9 +405,6 @@
   <div class="tooltip" id="tt"></div>
 
   <script>
-    // =========================
-    // ICON URLS (your final URLs)
-    // =========================
     const ICONS = {
       buffalo: "https://i.postimg.cc/CxM80J8c/buffalo_chicken_dip_removebg_preview.png",
       crab:    "https://i.postimg.cc/J45XSSsT/crab_dip.png",
@@ -367,7 +419,6 @@
       spinach: "https://i.postimg.cc/bN9n44Zg/spinach_dip.png"
     };
 
-    // Pastel fills per dip (map fills)
     const dipColor = {
       buffalo: "#FFC6A8",
       french:  "#FFE2A8",
@@ -398,73 +449,59 @@
 
     const featuredDips = ["buffalo","french","queso","guac","salsa","ranch","seven","spinach","rotel","crab","hummus"];
 
-    // National Total shares (tie-break)
-    const totalShare = {
-      buffalo: 15,
-      french:  14,
-      queso:   12,
-      guac:    10,
-      salsa:   9,
-      ranch:   9,
-      seven:   6,
-      spinach: 3,
-      rotel:   5,
-      crab:    4,
-      hummus:  2
-    };
+    const totalShare = { buffalo:15, french:14, queso:12, guac:10, salsa:9, ranch:9, seven:6, spinach:3, rotel:5, crab:4, hummus:2 };
 
-    // State shares
     const stateShares = {
-      "Alabama":      {buffalo:22,french:10,queso:13,guac:7,salsa:10,ranch:15,seven:2,spinach:2,rotel:10,crab:3,hummus:0},
-      "Alaska":       {buffalo:8,french:8,queso:12,guac:10,salsa:17,ranch:10,seven:13,spinach:2,rotel:4,crab:2,hummus:0},
-      "Arizona":      {buffalo:13,french:11,queso:11,guac:19,salsa:18,ranch:10,seven:2,spinach:3,rotel:0,crab:3,hummus:2},
-      "Arkansas":     {buffalo:8,french:11,queso:18,guac:10,salsa:7,ranch:5,seven:3,spinach:2,rotel:23,crab:3,hummus:2},
-      "California":   {buffalo:8,french:13,queso:10,guac:19,salsa:11,ranch:14,seven:5,spinach:2,rotel:0,crab:3,hummus:3},
-      "Colorado":     {buffalo:8,french:13,queso:23,guac:18,salsa:5,ranch:3,seven:8,spinach:3,rotel:0,crab:2,hummus:5},
-      "Connecticut":  {buffalo:27,french:16,queso:13,guac:11,salsa:5,ranch:5,seven:5,spinach:0,rotel:0,crab:2,hummus:2},
-      "Delaware":     {buffalo:23,french:18,queso:7,guac:5,salsa:7,ranch:3,seven:3,spinach:3,rotel:3,crab:15,hummus:2},
-      "Florida":      {buffalo:17,french:22,queso:5,guac:11,salsa:8,ranch:10,seven:6,spinach:5,rotel:3,crab:3,hummus:3},
-      "Georgia":      {buffalo:18,french:15,queso:7,guac:7,salsa:5,ranch:5,seven:7,spinach:7,rotel:10,crab:7,hummus:0},
-      "Hawaii":       {buffalo:6,french:10,queso:2,guac:17,salsa:10,ranch:10,seven:6,spinach:8,rotel:4,crab:8,hummus:0},
-      "Idaho":        {buffalo:8,french:7,queso:10,guac:10,salsa:15,ranch:7,seven:10,spinach:3,rotel:2,crab:5,hummus:2},
-      "Illinois":     {buffalo:20,french:12,queso:8,guac:12,salsa:14,ranch:8,seven:5,spinach:2,rotel:3,crab:0,hummus:6},
-      "Indiana":      {buffalo:22,french:7,queso:22,guac:8,salsa:3,ranch:13,seven:2,spinach:5,rotel:5,crab:3,hummus:2},
-      "Iowa":         {buffalo:19,french:14,queso:14,guac:8,salsa:15,ranch:7,seven:5,spinach:0,rotel:3,crab:2,hummus:0},
-      "Kansas":       {buffalo:12,french:10,queso:18,guac:10,salsa:10,ranch:7,seven:7,spinach:2,rotel:13,crab:3,hummus:2},
-      "Kentucky":     {buffalo:13,french:10,queso:16,guac:3,salsa:2,ranch:16,seven:5,spinach:5,rotel:8,crab:7,hummus:2},
-      "Louisiana":    {buffalo:14,french:8,queso:14,guac:8,salsa:15,ranch:19,seven:3,spinach:3,rotel:20,crab:0,hummus:0},
-      "Maine":        {buffalo:17,french:23,queso:10,guac:10,salsa:5,ranch:7,seven:7,spinach:2,rotel:0,crab:7,hummus:0},
-      "Maryland":     {buffalo:14,french:22,queso:3,guac:3,salsa:3,ranch:6,seven:3,spinach:6,rotel:2,crab:26,hummus:5},
-      "Massachusetts":{buffalo:23,french:23,queso:5,guac:8,salsa:10,ranch:2,seven:2,spinach:3,rotel:2,crab:3,hummus:3},
-      "Michigan":     {buffalo:10,french:10,queso:8,guac:8,salsa:10,ranch:13,seven:6,spinach:5,rotel:5,crab:10,hummus:2},
-      "Minnesota":    {buffalo:10,french:13,queso:15,guac:15,salsa:10,ranch:7,seven:5,spinach:2,rotel:2,crab:0,hummus:0},
-      "Mississippi":  {buffalo:13,french:15,queso:12,guac:7,salsa:7,ranch:3,seven:3,spinach:0,rotel:23,crab:8,hummus:0},
-      "Missouri":     {buffalo:10,french:8,queso:17,guac:3,salsa:14,ranch:8,seven:10,spinach:7,rotel:15,crab:3,hummus:3},
-      "Montana":      {buffalo:2,french:20,queso:11,guac:15,salsa:11,ranch:15,seven:7,spinach:7,rotel:0,crab:2,hummus:2},
-      "Nebraska":     {buffalo:8,french:12,queso:25,guac:8,salsa:7,ranch:12,seven:7,spinach:5,rotel:7,crab:2,hummus:0},
-      "Nevada":       {buffalo:12,french:8,queso:7,guac:19,salsa:14,ranch:19,seven:3,spinach:3,rotel:0,crab:2,hummus:7},
-      "New Hampshire":{buffalo:20,french:27,queso:8,guac:3,salsa:8,ranch:7,seven:10,spinach:2,rotel:0,crab:0,hummus:5},
-      "New Jersey":   {buffalo:16,french:11,queso:8,guac:8,salsa:13,ranch:11,seven:6,spinach:8,rotel:2,crab:2,hummus:3},
-      "New Mexico":   {buffalo:3,french:10,queso:18,guac:25,salsa:15,ranch:7,seven:7,spinach:2,rotel:2,crab:0,hummus:2},
-      "New York":     {buffalo:31,french:23,queso:8,guac:6,salsa:13,ranch:8,seven:0,spinach:2,rotel:0,crab:2,hummus:0},
-      "North Carolina":{buffalo:11,french:8,queso:24,guac:6,salsa:11,ranch:14,seven:0,spinach:3,rotel:3,crab:8,hummus:5},
-      "North Dakota": {buffalo:16,french:10,queso:17,guac:3,salsa:9,ranch:7,seven:12,spinach:7,rotel:7,crab:5,hummus:2},
-      "Ohio":         {buffalo:25,french:13,queso:11,guac:6,salsa:6,ranch:8,seven:10,spinach:5,rotel:0,crab:0,hummus:3},
-      "Oklahoma":     {buffalo:5,french:8,queso:21,guac:13,salsa:13,ranch:15,seven:7,spinach:3,rotel:8,crab:3,hummus:0},
-      "Oregon":       {buffalo:10,french:11,queso:13,guac:15,salsa:8,ranch:10,seven:11,spinach:3,rotel:3,crab:3,hummus:2},
-      "Pennsylvania": {buffalo:31,french:14,queso:3,guac:6,salsa:11,ranch:8,seven:0,spinach:2,rotel:2,crab:8,hummus:3},
-      "Rhode Island": {buffalo:20,french:25,queso:8,guac:7,salsa:12,ranch:5,seven:8,spinach:3,rotel:0,crab:3,hummus:0},
-      "South Carolina":{buffalo:20,french:20,queso:12,guac:3,salsa:5,ranch:14,seven:2,spinach:3,rotel:2,crab:2,hummus:0},
-      "South Dakota": {buffalo:14,french:9,queso:14,guac:2,salsa:14,ranch:18,seven:7,spinach:4,rotel:5,crab:4,hummus:2},
-      "Tennessee":    {buffalo:10,french:15,queso:13,guac:8,salsa:7,ranch:10,seven:8,spinach:5,rotel:15,crab:3,hummus:2},
-      "Texas":        {buffalo:8,french:8,queso:20,guac:19,salsa:6,ranch:22,seven:5,spinach:2,rotel:3,crab:2,hummus:2},
-      "Utah":         {buffalo:8,french:10,queso:11,guac:13,salsa:11,ranch:13,seven:13,spinach:3,rotel:3,crab:3,hummus:2},
-      "Vermont":      {buffalo:11,french:26,queso:5,guac:16,salsa:8,ranch:5,seven:5,spinach:0,rotel:0,crab:0,hummus:3},
-      "Virginia":     {buffalo:11,french:21,queso:8,guac:8,salsa:10,ranch:5,seven:8,spinach:2,rotel:2,crab:3,hummus:8},
-      "Washington":   {buffalo:16,french:14,queso:13,guac:16,salsa:14,ranch:5,seven:8,spinach:3,rotel:0,crab:5,hummus:2},
-      "West Virginia":{buffalo:27,french:14,queso:8,guac:2,salsa:8,ranch:14,seven:8,spinach:3,rotel:0,crab:3,hummus:0},
-      "Wisconsin":    {buffalo:11,french:22,queso:13,guac:14,salsa:10,ranch:5,seven:10,spinach:3,rotel:0,crab:5,hummus:0},
-      "Wyoming":      {buffalo:16,french:13,queso:16,guac:9,salsa:7,ranch:13,seven:15,spinach:0,rotel:2,crab:4,hummus:0}
+      "Alabama":{"buffalo":22,"french":10,"queso":13,"guac":7,"salsa":10,"ranch":15,"seven":2,"spinach":2,"rotel":10,"crab":3,"hummus":0},
+      "Alaska":{"buffalo":8,"french":8,"queso":12,"guac":10,"salsa":17,"ranch":10,"seven":13,"spinach":2,"rotel":4,"crab":2,"hummus":0},
+      "Arizona":{"buffalo":13,"french":11,"queso":11,"guac":19,"salsa":18,"ranch":10,"seven":2,"spinach":3,"rotel":0,"crab":3,"hummus":2},
+      "Arkansas":{"buffalo":8,"french":11,"queso":18,"guac":10,"salsa":7,"ranch":5,"seven":3,"spinach":2,"rotel":23,"crab":3,"hummus":2},
+      "California":{"buffalo":8,"french":13,"queso":10,"guac":19,"salsa":11,"ranch":14,"seven":5,"spinach":2,"rotel":0,"crab":3,"hummus":3},
+      "Colorado":{"buffalo":8,"french":13,"queso":23,"guac":18,"salsa":5,"ranch":3,"seven":8,"spinach":3,"rotel":0,"crab":2,"hummus":5},
+      "Connecticut":{"buffalo":27,"french":16,"queso":13,"guac":11,"salsa":5,"ranch":5,"seven":5,"spinach":0,"rotel":0,"crab":2,"hummus":2},
+      "Delaware":{"buffalo":23,"french":18,"queso":7,"guac":5,"salsa":7,"ranch":3,"seven":3,"spinach":3,"rotel":3,"crab":15,"hummus":2},
+      "Florida":{"buffalo":17,"french":22,"queso":5,"guac":11,"salsa":8,"ranch":10,"seven":6,"spinach":5,"rotel":3,"crab":3,"hummus":3},
+      "Georgia":{"buffalo":18,"french":15,"queso":7,"guac":7,"salsa":5,"ranch":5,"seven":7,"spinach":7,"rotel":10,"crab":7,"hummus":0},
+      "Hawaii":{"buffalo":6,"french":10,"queso":2,"guac":17,"salsa":10,"ranch":10,"seven":6,"spinach":8,"rotel":4,"crab":8,"hummus":0},
+      "Idaho":{"buffalo":8,"french":7,"queso":10,"guac":10,"salsa":15,"ranch":7,"seven":10,"spinach":3,"rotel":2,"crab":5,"hummus":2},
+      "Illinois":{"buffalo":20,"french":12,"queso":8,"guac":12,"salsa":14,"ranch":8,"seven":5,"spinach":2,"rotel":3,"crab":0,"hummus":6},
+      "Indiana":{"buffalo":22,"french":7,"queso":22,"guac":8,"salsa":3,"ranch":13,"seven":2,"spinach":5,"rotel":5,"crab":3,"hummus":2},
+      "Iowa":{"buffalo":19,"french":14,"queso":14,"guac":8,"salsa":15,"ranch":7,"seven":5,"spinach":0,"rotel":3,"crab":2,"hummus":0},
+      "Kansas":{"buffalo":12,"french":10,"queso":18,"guac":10,"salsa":10,"ranch":7,"seven":7,"spinach":2,"rotel":13,"crab":3,"hummus":2},
+      "Kentucky":{"buffalo":13,"french":10,"queso":16,"guac":3,"salsa":2,"ranch":16,"seven":5,"spinach":5,"rotel":8,"crab":7,"hummus":2},
+      "Louisiana":{"buffalo":14,"french":8,"queso":14,"guac":8,"salsa":15,"ranch":19,"seven":3,"spinach":3,"rotel":20,"crab":0,"hummus":0},
+      "Maine":{"buffalo":17,"french":23,"queso":10,"guac":10,"salsa":5,"ranch":7,"seven":7,"spinach":2,"rotel":0,"crab":7,"hummus":0},
+      "Maryland":{"buffalo":14,"french":22,"queso":3,"guac":3,"salsa":3,"ranch":6,"seven":3,"spinach":6,"rotel":2,"crab":26,"hummus":5},
+      "Massachusetts":{"buffalo":23,"french":23,"queso":5,"guac":8,"salsa":10,"ranch":2,"seven":2,"spinach":3,"rotel":2,"crab":3,"hummus":3},
+      "Michigan":{"buffalo":10,"french":10,"queso":8,"guac":8,"salsa":10,"ranch":13,"seven":6,"spinach":5,"rotel":5,"crab":10,"hummus":2},
+      "Minnesota":{"buffalo":10,"french":13,"queso":15,"guac":15,"salsa":10,"ranch":7,"seven":5,"spinach":2,"rotel":2,"crab":0,"hummus":0},
+      "Mississippi":{"buffalo":13,"french":15,"queso":12,"guac":7,"salsa":7,"ranch":3,"seven":3,"spinach":0,"rotel":23,"crab":8,"hummus":0},
+      "Missouri":{"buffalo":10,"french":8,"queso":17,"guac":3,"salsa":14,"ranch":8,"seven":10,"spinach":7,"rotel":15,"crab":3,"hummus":3},
+      "Montana":{"buffalo":2,"french":20,"queso":11,"guac":15,"salsa":11,"ranch":15,"seven":7,"spinach":7,"rotel":0,"crab":2,"hummus":2},
+      "Nebraska":{"buffalo":8,"french":12,"queso":25,"guac":8,"salsa":7,"ranch":12,"seven":7,"spinach":5,"rotel":7,"crab":2,"hummus":0},
+      "Nevada":{"buffalo":12,"french":8,"queso":7,"guac":19,"salsa":14,"ranch":19,"seven":3,"spinach":3,"rotel":0,"crab":2,"hummus":7},
+      "New Hampshire":{"buffalo":20,"french":27,"queso":8,"guac":3,"salsa":8,"ranch":7,"seven":10,"spinach":2,"rotel":0,"crab":0,"hummus":5},
+      "New Jersey":{"buffalo":16,"french":11,"queso":8,"guac":8,"salsa":13,"ranch":11,"seven":6,"spinach":8,"rotel":2,"crab":2,"hummus":3},
+      "New Mexico":{"buffalo":3,"french":10,"queso":18,"guac":25,"salsa":15,"ranch":7,"seven":7,"spinach":2,"rotel":2,"crab":0,"hummus":2},
+      "New York":{"buffalo":31,"french":23,"queso":8,"guac":6,"salsa":13,"ranch":8,"seven":0,"spinach":2,"rotel":0,"crab":2,"hummus":0},
+      "North Carolina":{"buffalo":11,"french":8,"queso":24,"guac":6,"salsa":11,"ranch":14,"seven":0,"spinach":3,"rotel":3,"crab":8,"hummus":5},
+      "North Dakota":{"buffalo":16,"french":10,"queso":17,"guac":3,"salsa":9,"ranch":7,"seven":12,"spinach":7,"rotel":7,"crab":5,"hummus":2},
+      "Ohio":{"buffalo":25,"french":13,"queso":11,"guac":6,"salsa":6,"ranch":8,"seven":10,"spinach":5,"rotel":0,"crab":0,"hummus":3},
+      "Oklahoma":{"buffalo":5,"french":8,"queso":21,"guac":13,"salsa":13,"ranch":15,"seven":7,"spinach":3,"rotel":8,"crab":3,"hummus":0},
+      "Oregon":{"buffalo":10,"french":11,"queso":13,"guac":15,"salsa":8,"ranch":10,"seven":11,"spinach":3,"rotel":3,"crab":3,"hummus":2},
+      "Pennsylvania":{"buffalo":31,"french":14,"queso":3,"guac":6,"salsa":11,"ranch":8,"seven":0,"spinach":2,"rotel":2,"crab":8,"hummus":3},
+      "Rhode Island":{"buffalo":20,"french":25,"queso":8,"guac":7,"salsa":12,"ranch":5,"seven":8,"spinach":3,"rotel":0,"crab":3,"hummus":0},
+      "South Carolina":{"buffalo":20,"french":20,"queso":12,"guac":3,"salsa":5,"ranch":14,"seven":2,"spinach":3,"rotel":2,"crab":2,"hummus":0},
+      "South Dakota":{"buffalo":14,"french":9,"queso":14,"guac":2,"salsa":14,"ranch":18,"seven":7,"spinach":4,"rotel":5,"crab":4,"hummus":2},
+      "Tennessee":{"buffalo":10,"french":15,"queso":13,"guac":8,"salsa":7,"ranch":10,"seven":8,"spinach":5,"rotel":15,"crab":3,"hummus":2},
+      "Texas":{"buffalo":8,"french":8,"queso":20,"guac":19,"salsa":6,"ranch":22,"seven":5,"spinach":2,"rotel":3,"crab":2,"hummus":2},
+      "Utah":{"buffalo":8,"french":10,"queso":11,"guac":13,"salsa":11,"ranch":13,"seven":13,"spinach":3,"rotel":3,"crab":3,"hummus":2},
+      "Vermont":{"buffalo":11,"french":26,"queso":5,"guac":16,"salsa":8,"ranch":5,"seven":5,"spinach":0,"rotel":0,"crab":0,"hummus":3},
+      "Virginia":{"buffalo":11,"french":21,"queso":8,"guac":8,"salsa":10,"ranch":5,"seven":8,"spinach":2,"rotel":2,"crab":3,"hummus":8},
+      "Washington":{"buffalo":16,"french":14,"queso":13,"guac":16,"salsa":14,"ranch":5,"seven":8,"spinach":3,"rotel":0,"crab":5,"hummus":2},
+      "West Virginia":{"buffalo":27,"french":14,"queso":8,"guac":2,"salsa":8,"ranch":14,"seven":8,"spinach":3,"rotel":0,"crab":3,"hummus":0},
+      "Wisconsin":{"buffalo":11,"french":22,"queso":13,"guac":14,"salsa":10,"ranch":5,"seven":10,"spinach":3,"rotel":0,"crab":5,"hummus":0},
+      "Wyoming":{"buffalo":16,"french":13,"queso":16,"guac":9,"salsa":7,"ranch":13,"seven":15,"spinach":0,"rotel":2,"crab":4,"hummus":0}
     };
 
     function dipLabel(dip){
@@ -507,16 +544,12 @@
       return { dip: bestDip };
     }
 
-    // Build per-state winner table
     const perState = {};
     Object.keys(stateShares).forEach(st => {
       const w = pickWinner(st);
       if(w) perState[st] = w;
     });
 
-    // =========================
-    // Legend (all dips used on the map)
-    // =========================
     function renderLegend(){
       const legend = document.getElementById("legend");
       const used = Array.from(new Set(Object.values(perState).map(x => x.dip)))
@@ -530,9 +563,6 @@
     }
     renderLegend();
 
-    // =========================
-    // Tooltip
-    // =========================
     const tooltip = d3.select("#tt");
 
     function placeTooltip(event){
@@ -560,9 +590,6 @@
 
     function hideTip(){ tooltip.style("display","none"); }
 
-    // =========================
-    // Draw map + icons
-    // =========================
     const svg = d3.select("#map");
     svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
@@ -669,9 +696,7 @@
       t = setTimeout(() => renderMap(), 120);
     });
 
-    // =========================
-    // Embed logic
-    // =========================
+    // Embed
     const embedToggle = document.getElementById("embedToggle");
     const embedPanel  = document.getElementById("embedPanel");
     const embedCode   = document.getElementById("embedCode");
