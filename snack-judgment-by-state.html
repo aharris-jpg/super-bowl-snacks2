@@ -17,7 +17,6 @@
       --ink:#1a2730;
       --muted:rgba(26,39,48,0.70);
 
-      /* neutral accent (no blue badge) */
       --accent:#1a2730;
 
       --card:rgba(255,255,255,0.70);
@@ -51,7 +50,6 @@
 
     .wrap{ max-width:1040px; margin:0 auto; }
 
-    /* ===== Header (no top-left badge) ===== */
     .hero{
       padding:10px 0 12px;
       margin-bottom:12px;
@@ -92,7 +90,6 @@
       max-width:72ch;
     }
 
-    /* ===== Card ===== */
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -145,10 +142,9 @@
       pointer-events:none;
     }
 
-    /* ===== Labels on map ===== */
     .labels text{
       font-weight:1000;
-      letter-spacing:0.01em;
+      letter-spacing:0.02em;
       fill:rgba(26,39,48,0.86);
       paint-order: stroke;
       stroke:rgba(255,255,255,0.92);
@@ -157,9 +153,9 @@
       pointer-events:none;
       text-anchor:middle;
       dominant-baseline:middle;
+      text-transform:uppercase;
     }
 
-    /* Tooltip */
     .tooltip{
       position:absolute;
       pointer-events:none;
@@ -179,9 +175,20 @@
       margin-bottom:4px;
       color:rgba(26,39,48,0.92);
     }
+    .tooltip .meta{
+      font-weight:900;
+      color:rgba(26,39,48,0.86);
+      line-height:1.25;
+    }
+    .tooltip .meta small{
+      display:block;
+      margin-top:6px;
+      font-weight:850;
+      color:rgba(26,39,48,0.62);
+    }
     .tooltip .pill{
       display:inline-block;
-      margin-top:6px;
+      margin-top:8px;
       font-size:11px;
       font-weight:950;
       padding:6px 10px;
@@ -191,7 +198,6 @@
       white-space:nowrap;
     }
 
-    /* ===== Legend ===== */
     .legend{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
@@ -227,7 +233,6 @@
       text-overflow:ellipsis;
     }
 
-    /* ===== Footer / Methodology / Embed ===== */
     .method{
       padding:10px 16px 12px;
       font-size:11px;
@@ -308,7 +313,7 @@
     <div class="hero">
       <div class="kicker">Super Bowl parties • Host impressions</div>
       <h1 class="title">Where Super Bowl Hosts<br/>Get Judged on Snacks</h1>
-      <div class="subtitle">For each state, this shows the most common answer to: “How much do Super Bowl snacks influence your opinion of the host?”</div>
+      <div class="subtitle">For each state, this shows the influence level of Super Bowl snacks on opinions of the host (strongly + somewhat).</div>
     </div>
 
     <div class="card">
@@ -322,10 +327,9 @@
 
       <div class="method">
         <div>
-          <strong>Methodology:</strong> Based on a RotoGrinders.com survey (Q5). For each state, we selected the most common answer among:
-          <strong>Judged</strong> (strongly affects), <strong>Some</strong> (somewhat affects), <strong>Not</strong> (notice but don’t judge), and
-          <strong>Doesn’t</strong> (do not matter). “I do not attend Super Bowl parties” was excluded from the winner selection.
-          <br><strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n = 3,080 U.S. adults).
+          <strong>Methodology:</strong> Based on a RotoGrinders.com survey (Q5). For each state, we calculated <strong>Total influence</strong> =
+          <strong>Strongly affects</strong> + <strong>Somewhat affects</strong>, then grouped states into four levels for easier viewing.
+          <br><strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n = 3,008 U.S. adults).
         </div>
         <div class="brand" aria-label="Brand">
           <img class="logo" src="https://i.postimg.cc/jqwyS7PB/download.png" alt="Logo" />
@@ -349,27 +353,35 @@
 
   <script>
     // =========================
-    // CATEGORY STYLING (soft)
+    // LEVELS (static-friendly)
     // =========================
-    const CATS = {
-      judged:  { label:"Hosts are judged",      fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)",  short:"Judged" },
-      some:    { label:"Some judgment",         fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", short:"Some"   },
-      neutral: { label:"Notice, don’t judge",   fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", short:"Not"    },
-      doesnt:  { label:"Doesn’t matter",        fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",   short:"No"     }
-    };
+    // Total influence = strong + some
+    // Map shows level text (HIGH/MED/LOW/VERY LOW) for cleaner screenshots.
+    const LEVELS = [
+      { key:"high",     level:"HIGH",     range:"50%+",    fill:"#F3B2AC", badge:"rgba(226,96,98,0.92)",  legend:"High influence (50%+)" },
+      { key:"med",      level:"MED",      range:"40–49%",  fill:"#F6D7B1", badge:"rgba(240,160,50,0.92)", legend:"Medium influence (40–49%)" },
+      { key:"low",      level:"LOW",      range:"30–39%",  fill:"#BFE1DD", badge:"rgba(60,189,176,0.92)", legend:"Low influence (30–39%)" },
+      { key:"vlow",     level:"VERY LOW", range:"<30%",    fill:"#E6E8EB", badge:"rgba(26,39,48,0.68)",   legend:"Very low influence (<30%)" }
+    ];
+
+    function classify(total){
+      if(total >= 50) return LEVELS[0];
+      if(total >= 40) return LEVELS[1];
+      if(total >= 30) return LEVELS[2];
+      return LEVELS[3];
+    }
 
     // Legend
     const legend = document.getElementById("legend");
-    legend.innerHTML = Object.keys(CATS).map(k => `
+    legend.innerHTML = LEVELS.map(l => `
       <div class="leg-item">
-        <span class="swatch" style="background:${CATS[k].fill}"></span>
-        <span class="leg-label">${CATS[k].label}</span>
+        <span class="swatch" style="background:${l.fill}"></span>
+        <span class="leg-label">${l.legend}</span>
       </div>
     `).join("");
 
     // =========================
-    // Q5 DATA (MATCHED TO YOUR TABLE EXACTLY)
-    // Winner = max of [strong, some, notice, doesnt], excluding "noParty"
+    // Q5 DATA (AS PROVIDED)
     // =========================
     const Q5 = {
       "Alabama":       {strong:15, some:18, notice:35, doesnt:23, noParty:8},
@@ -424,26 +436,13 @@
       "Wyoming":       {strong:22, some:27, notice:27, doesnt:18, noParty:5}
     };
 
-    // =========================
-    // Build winner category per state
-    // =========================
-    function pickCategory(st){
-      const v = Q5[st];
-      if(!v) return null;
-      const options = [
-        ["judged",  v.strong],
-        ["some",    v.some],
-        ["neutral", v.notice],
-        ["doesnt",  v.doesnt]
-      ];
-      options.sort((a,b)=> b[1]-a[1]);
-      return { key: options[0][0], pct: options[0][1] };
-    }
-
-    const stateCategory = {};
+    // Compute totals + levels
+    const stateInfo = {};
     Object.keys(Q5).forEach(st => {
-      const w = pickCategory(st);
-      if(w) stateCategory[st] = w;
+      const v = Q5[st];
+      const total = (v.strong || 0) + (v.some || 0);
+      const cls = classify(total);
+      stateInfo[st] = { total, cls, strong:v.strong||0, some:v.some||0 };
     });
 
     // USPS abbreviations (tiny states)
@@ -491,16 +490,19 @@
       tooltip.style("left", x+"px").style("top", y+"px");
     }
     function showTip(event, stateName){
-      const w = stateCategory[stateName];
-      if(!w) return;
-      const cat = CATS[w.key];
+      const info = stateInfo[stateName];
+      if(!info) return;
+
       tooltip
         .style("display","block")
         .html(
           `<strong>${esc(stateName)}</strong>
-           <div style="font-weight:900;color:rgba(26,39,48,0.88)">${esc(cat.label)} <span style="font-weight:900;opacity:0.75">(${w.pct}%)</span></div>
-           <div class="pill" style="background:${cat.badge}">Snack hospitality signal</div>`
+           <div class="meta">${esc(info.cls.legend)} <span style="opacity:0.75">(${info.total}%)</span>
+             <small>Strongly: ${info.strong}% · Somewhat: ${info.some}%</small>
+           </div>
+           <div class="pill" style="background:${info.cls.badge}">${esc(info.cls.level)} influence</div>`
         );
+
       placeTooltip(event);
     }
     function hideTip(){ tooltip.style("display","none"); }
@@ -512,7 +514,7 @@
     const path = d3.geoPath(projection);
 
     function getLabelFont(){
-      return window.innerWidth < 520 ? 11 : 12.5;
+      return window.innerWidth < 520 ? 10.5 : 12.25;
     }
 
     let cachedUS = null;
@@ -533,18 +535,18 @@
         .attr("d", path)
         .attr("fill", d => {
           const name = d.properties && d.properties.name;
-          const w = stateCategory[name];
-          return w ? CATS[w.key].fill : "rgba(26,39,48,0.08)";
+          const info = stateInfo[name];
+          return info ? info.cls.fill : "rgba(26,39,48,0.08)";
         })
         .on("mousemove", (event, d) => {
           const name = d.properties && d.properties.name;
-          if(!stateCategory[name]) return hideTip();
+          if(!stateInfo[name]) return hideTip();
           showTip(event, name);
         })
         .on("mouseout", hideTip)
         .on("click", (event, d) => {
           const name = d.properties && d.properties.name;
-          if(!stateCategory[name]) return hideTip();
+          if(!stateInfo[name]) return hideTip();
           showTip(event, name);
           event.stopPropagation();
         });
@@ -555,23 +557,24 @@
         .attr("class","state-outline")
         .attr("d", path);
 
-      // Labels
+      // Labels: show LEVEL (clean for screenshots)
       const fontSize = getLabelFont();
       const gLabels = svg.append("g").attr("class","labels");
 
       const labelPoints = cachedFeatures.map(f => {
         const name = f.properties && f.properties.name;
-        const w = stateCategory[name];
-        if(!w) return null;
+        const info = stateInfo[name];
+        if(!info) return null;
 
         const c = path.centroid(f);
         if(!c || !isFinite(c[0]) || !isFinite(c[1])) return null;
 
         const [dx,dy] = labelOffsets[name] || [0,0];
 
+        // Tiny states: show abbreviation + level
         const txt = forceAbbrev.has(name)
-          ? `${USPS[name]} · ${CATS[w.key].short}`
-          : CATS[w.key].short;
+          ? `${USPS[name]} · ${info.cls.level}`
+          : info.cls.level;
 
         return { name, x:c[0]+dx, y:c[1]+dy, text:txt };
       }).filter(Boolean);
