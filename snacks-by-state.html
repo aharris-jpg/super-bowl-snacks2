@@ -17,7 +17,6 @@
       --ink:#1a2730;
       --muted:rgba(26,39,48,0.74);
 
-      /* keep accent subtle (NOT used for title anymore) */
       --accent:#e85a6a;
 
       --card:rgba(255,255,255,0.72);
@@ -74,7 +73,6 @@
       margin-bottom:10px;
     }
 
-    /* single-color, editorial title */
     .title{
       margin:0;
       font-weight:1000;
@@ -83,7 +81,7 @@
       color:rgba(26,39,48,0.94);
       text-shadow:0 8px 22px rgba(0,0,0,0.08);
       font-size:clamp(30px, 4.6vw, 56px);
-      max-width:24ch; /* intentional 2-line wrap on desktop */
+      max-width:24ch;
     }
 
     .subtitle{
@@ -114,7 +112,7 @@
       overflow:hidden;
     }
 
-    /* Watermark layer (set dynamically to used snacks only) */
+    /* Watermark layer (set dynamically to top winners only) */
     .map-frame:before{
       content:"";
       position:absolute;
@@ -168,7 +166,7 @@
 
     .icons-layer image{
       filter: drop-shadow(0 10px 14px rgba(0,0,0,0.14));
-      opacity:0.90;
+      opacity:0.92;
     }
 
     /* Tooltip */
@@ -209,25 +207,36 @@
       white-space:nowrap;
     }
 
-    /* ===== Legend (only used snacks) ===== */
+    /* ===== Legend (ONLY winning snacks + # of winning states) ===== */
     .legend{
       display:grid;
       grid-template-columns:repeat(3, minmax(0,1fr));
       gap:10px;
       margin:12px 0 6px;
     }
-    @media (max-width:820px){
+    @media (max-width:900px){
+      .legend{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width:560px){
       .legend{ grid-template-columns:repeat(1, minmax(0,1fr)); }
     }
+
     .leg-item{
       display:flex;
       align-items:center;
+      justify-content:space-between;
       gap:10px;
-      padding:10px 10px;
+      padding:10px 12px;
       border-radius:14px;
       border:1px solid rgba(26,39,48,0.08);
       min-width:0;
       background:rgba(255,255,255,0.62);
+    }
+    .leg-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
     }
     .leg-icon{
       width:18px;
@@ -243,6 +252,18 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+    }
+    .leg-count{
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:950;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(26,39,48,0.10);
+      background:rgba(255,255,255,0.72);
+      color:rgba(26,39,48,0.82);
+      letter-spacing:0.01em;
+      white-space:nowrap;
     }
 
     /* ===== Footer / Methodology / Embed ===== */
@@ -335,16 +356,13 @@
           <svg id="map" viewBox="0 0 975 610" role="img" aria-label="America’s Favorite Super Bowl Snack map"></svg>
         </div>
 
-        <!-- Key (only shows the snacks that actually win at least one state) -->
+        <!-- Key (only snacks that win at least one state) -->
         <div class="legend" id="legend"></div>
       </div>
 
       <div class="method">
         <div>
-          <strong>Methodology:</strong> We selected the most-chosen snack in each state from six featured options
-          (Wings, Pizza, Chips &amp; Dip, Nachos, Cheese Board, Potato Skins). “Other” snacks were not included.
-          <br>
-          <strong>Ties:</strong> If two snacks tied in a state, we used the national result from the “Total” column to break the tie.
+          <strong>Methodology:</strong>The map shows the most-chosen Super Bowl snack in each state.
           <br>
           <strong>Source:</strong> Survey conducted by <strong>RotoGrinders.com</strong> (n=3,008 U.S. adults).
         </div>
@@ -393,6 +411,8 @@
 
     // "Total" column (national share) for tie-break
     const totalShare = { wings:26, pizza:17, chips:16, nachos:8, cheese:3, skins:1 };
+
+    // Only six featured options.
     const featured = ["wings","pizza","chips","nachos","cheese","skins"];
 
     // State-level shares (as provided)
@@ -491,38 +511,55 @@
       if(w) perState[st] = w;
     });
 
-    // Used snacks (for key + watermarks)
-    function usedSnackOrder(){
+    // Count # of winning states per snack
+    function snackWinCounts(){
       const counts = {};
+      featured.forEach(k => counts[k] = 0);
       Object.values(perState).forEach(v => { counts[v.snack] = (counts[v.snack] || 0) + 1; });
-      return Object.keys(counts).sort((a,b)=>{
-        const d = (counts[b]-counts[a]);
-        if(d !== 0) return d;
-        return snackLabel(a).localeCompare(snackLabel(b));
-      });
+      return counts;
     }
-    const USED = usedSnackOrder(); // likely wings, pizza, chips
+    const WIN_COUNTS = snackWinCounts();
 
-    // Inject watermark background images into :before (ONLY used snacks)
+    // Legend order: ONLY snacks with wins > 0, sorted by wins desc
+    function legendOrderWinnersOnly(){
+      return featured
+        .filter(k => (WIN_COUNTS[k] || 0) > 0)
+        .sort((a,b)=>{
+          const d = (WIN_COUNTS[b] - WIN_COUNTS[a]);
+          if(d !== 0) return d;
+          return snackLabel(a).localeCompare(snackLabel(b));
+        });
+    }
+    const WINNING_SNACKS = legendOrderWinnersOnly();
+
+    // Watermark uses top 3 winners
+    const USED_FOR_WATERMARK = WINNING_SNACKS.slice(0,3);
+
+    // Inject watermark background images into :before
     (function setWatermarks(){
-      const frame = document.getElementById("mapFrame");
-      const imgs = USED.slice(0,3).map(k => `url("${ICONS[k]}")`);
+      const imgs = USED_FOR_WATERMARK.map(k => `url("${ICONS[k]}")`);
       while(imgs.length < 3) imgs.push(imgs[imgs.length-1] || "none");
-
       const style = document.createElement("style");
       style.textContent = `#mapFrame.map-frame:before{background-image:${imgs.join(", ")};}`;
       document.head.appendChild(style);
     })();
 
-    // Render legend (ONLY used)
+    // Render legend (ONLY winners)
     function renderLegend(){
       const legend = document.getElementById("legend");
-      legend.innerHTML = USED.map(snack => `
+      legend.innerHTML = WINNING_SNACKS.map(snack => `
         <div class="leg-item" style="background:${(snackColor[snack] || "#fff")}66">
-          <img class="leg-icon" src="${ICONS[snack]}" alt="">
-          <div class="leg-label">${esc(snackLabel(snack))}</div>
+          <div class="leg-left">
+            <img class="leg-icon" src="${ICONS[snack]}" alt="">
+            <div class="leg-label">${esc(snackLabel(snack))}</div>
+          </div>
+          <div class="leg-count">${WIN_COUNTS[snack]} ${WIN_COUNTS[snack] === 1 ? "state" : "states"}</div>
         </div>
       `).join("");
+
+      // If there are only 1–2 winners, reduce columns so it doesn't look empty
+      const cols = Math.min(3, Math.max(1, WINNING_SNACKS.length));
+      legend.style.gridTemplateColumns = `repeat(${cols}, minmax(0,1fr))`;
     }
     renderLegend();
 
